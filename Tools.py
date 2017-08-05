@@ -76,7 +76,6 @@ def update_treasure_file(target, tier, value):
 	for line in file:	
 		#User has never had a chest of the tier being added.	
 		if line == "\n" and tier == int(currentTier) and found == False:
-			print("Gets Here")
 			newLine = target + ":" + str(value) + "\n" +"\n"
 			temp = temp + newLine
 			continue
@@ -88,7 +87,6 @@ def update_treasure_file(target, tier, value):
 		#Change currentTier
 		if line.startswith("*Tier"):
 			currentTier = line.split(" ")[1][0]
-			print("tier: " + currentTier)
 			temp = temp + line
 			continue
 
@@ -120,6 +118,23 @@ def append(filename, username):
 	file = open(filename, "a")
 	file.write(username + "\n")
 	file.close()
+
+
+def remove_top_line(filename):
+	first_line = False
+	file = open(filename, "r")
+	output = ""
+
+	for line in file:
+		if first_line == False:
+			first_line = True
+			continue
+		output += line
+
+	file.close()
+
+	file = open(filename, "w")
+	file.write(output)
 
 
 #

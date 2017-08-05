@@ -64,13 +64,16 @@ class Mission:
 
 		for line in file:
 			if self.success == True and line.startswith("Win"):
-				level = int(line.split(":")[0].split(" ")[1]) #extract the level as an int from the txt file
+				level = int(line.split(":")[0].split(" ")[1])
 				if level == self.level:
+					file.close()
 					output = line.split(":")[1].strip('\n')
 					return output
+
 			elif self.success == False and line.startswith("Loss"):
-				level = int(line.split(":")[0].split(" ")[1]) #extract the level as an int from the txt file
+				level = int(line.split(":")[0].split(" ")[1])
 				if level == self.level:
+					file.close()
 					output = line.split(":")[1].strip('\n')
 					return output
 
@@ -249,8 +252,6 @@ def success(self, socket, irc):
 	send_message(socket, irc, outcome)
 	file.close()
 	return
-
-
 
 
 #

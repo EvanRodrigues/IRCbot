@@ -1,5 +1,7 @@
 from Treasure import getTreasure
 
+TODAYS_ROLLS_FILE = "TodaysRolls.txt"
+
 class User:
 	def __init__(self, username):
 		self.username = username
@@ -37,6 +39,7 @@ class User:
 				dollars = line.split(":")[1]
 				return dollars.strip("\n")
 
+		return 0
 
 	#
 	# Will return the current level the user is based on their total xp
@@ -70,5 +73,13 @@ class User:
 			return 12
 
 
+	def hasRolled(self):
+		file = open(TODAYS_ROLLS_FILE, "r")
+
+		for line in file:
+			if line.split("\n")[0] == self.username:
+				return True
+
+		return False
 
 

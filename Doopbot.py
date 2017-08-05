@@ -1,6 +1,7 @@
 import socket
 
 from Mission import Mission
+from Slots import Slots
 from MessageHandler import message_handler
 
 class ircConnection:
@@ -36,8 +37,9 @@ s.send(bytes("PASS " + irc.PASS + "\r\n", "UTF-8"))
 s.send(bytes("NICK " + irc.NICK + "\r\n", "UTF-8"))
 s.send(bytes("JOIN #" + irc.CHANNEL + "\r\n", "UTF-8"))
 
-#Global mission variable since there can only be one mission at a time.
+#Global mission/slots variable since there can only be one mission at a time.
 mission = Mission()
+slots = Slots(s, irc)
 
 while True:
 	line = str(s.recv(1024))
@@ -57,6 +59,6 @@ while True:
 		usernamesplit = parts[1].split("!")
 		username = usernamesplit[0]
 		print(username + ": " + message)
-		message_handler(irc, s, username, message, mission)
+		message_handler(irc, s, username, message, mission, slots)
 	
 		
