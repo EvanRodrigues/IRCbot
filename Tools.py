@@ -1,3 +1,6 @@
+import datetime
+from os.path import exists
+
 def send_message(socket, irc, message):
 	socket.send(bytes("PRIVMSG #" + irc.CHANNEL + " :" + message + "\r\n", "UTF-8"))
 
@@ -15,6 +18,36 @@ def isEmpty(filename):
 	else:
 		return False
 
+
+
+
+def create_log():
+	filepath = "B:/Streaming_Resources/Stream_Logs/"
+	date = str(datetime.date.today()).split("-")
+	year = date[0]
+	month = get_month(date[1])
+	day = date[2]
+	
+	filename = filepath + month + "_" + day + "_" + year + ".txt"
+	count = 0
+	while True:
+		if exists(filename):
+			count += 1
+			filename = filepath + month + "_" + day + "_" + year + "(" + str(count) + ")" +".txt"
+		else:
+			file = open(filename, "a")
+			file.write("File created \n\r")
+			file.close()
+			return filename
+	
+
+
+
+
+
+def get_month(month):
+	months = {"01": "Jan", "02": "Feb", "03": "Mar", "04": "Apr", "05": "May", "06": "Jun", "07": "Jul", "08": "Aug", "09": "Sep", "10": "Oct", "11": "Nov", "12": "Dec"}
+	return months[month]
 
 
 #

@@ -60,5 +60,3 @@ while True:
 		username = usernamesplit[0]
 		print(username + ": " + message)
 		message_handler(irc, s, username, message, mission, slots)
-	
-		
