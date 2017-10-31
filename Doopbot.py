@@ -5,6 +5,7 @@ from SongList import SongList
 from Mission import Mission
 from Slots import Slots
 from Raffle import Raffle
+from Quote import Quote
 from MessageHandler import message_handler
 
 class ircConnection:
@@ -53,6 +54,7 @@ s.send(bytes("JOIN #" + irc.CHANNEL + "\r\n", "UTF-8"))
 
 #Global mission/slots variable since there can only be one mission at a time.
 mission = Mission()
+quote = Quote()
 slots = Slots(s, irc)
 raffle = Raffle(s, irc, 0, False, None, 200)
 songList = SongList(s, irc)
@@ -75,4 +77,4 @@ while True:
 		usernamesplit = parts[1].split("!")
 		username = usernamesplit[0]
 		print(username + ": " + message)
-		message_handler(irc, s, username, message, mission, slots, raffle, songList)
+		message_handler(irc, s, username, message, mission, slots, raffle, songList, quote)

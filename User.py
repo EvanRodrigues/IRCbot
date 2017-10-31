@@ -12,6 +12,8 @@ ALLTIME_POINTS_FILE = "./Data/AllTimePoints.txt"
 TREASURE_FILE = "./Data/Treasure.txt"
 MODS_FILE = "./Data/Mods.txt"
 
+levels = {'1': 100, '2': 250, '3': 750, '4': 1500, '5': 2500, '6': 4000, '7': 6000, '8': 10000, '9': 15000, '10': 25000, '11': 50000}
+
 class User:
 	def __init__(self, username):
 		self.username = username
@@ -20,9 +22,11 @@ class User:
 		#self.allDollars = self.getAllDollars()
 		self.treasure = getTreasure(username)
 		self.level = self.getLevel()
+		self.remainder = self.getRemainingXP()
 		self.sessionKappa = self.getSession()
 		self.allKappa = self.getAllTime()
 		self.mod = isMod(self.username)
+
 
 	#
 	# MAKE THESE LESS REDUNDANT! ONLY HAVE ONE GET WITH A STRING ARGUMENT
@@ -62,6 +66,12 @@ class User:
 	def getAllTime(self):
 		File = open(ALLTIME_FILE, "r")
 		return getStats(File, self.username)
+
+	def getRemainingXP(self):
+		levelUp = levels[str(self.level)]
+		return str(levelUp - self.xp)
+
+
 
 	#
 	# Will return the current level the user is based on their total xp

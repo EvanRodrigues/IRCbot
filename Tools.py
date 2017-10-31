@@ -77,11 +77,14 @@ def importPoints():
 
 
 def format_five(sortedUsers):
-	output = "(1) - " + sortedUsers[0]['username'] + ": " + str(sortedUsers[0]['points']) + " "
-	output += "(2) - " + sortedUsers[1]['username'] + ": " + str(sortedUsers[1]['points']) + " "
-	output += "(3) - " + sortedUsers[2]['username'] + ": " + str(sortedUsers[2]['points']) + " "
-	output += "(4) - " + sortedUsers[3]['username'] + ": " + str(sortedUsers[3]['points']) + " "
-	output += "(5) - " + sortedUsers[4]['username'] + ": " + str(sortedUsers[4]['points']) + " "
+	totalUsers = 0
+	count = 0
+	output = ""
+	while totalUsers < 5:
+		if sortedUsers[count]['username'] != "doopian":
+			output += "(" + str(totalUsers+1) + ") - " + sortedUsers[count]['username'] + ": " + str(sortedUsers[count]['points']) + " "
+			totalUsers += 1
+		count += 1
 
 	return output
 
@@ -91,10 +94,7 @@ def get_rank(username, sortedUsers):
 
 	for user in sortedUsers:
 		if user["username"] == username:
-			count += 1
-			print(username)
-			return "Your rank is " + str(count) + " out of " + str(len(sortedUsers)) + " with " + str(user["points"]) + " doop dollars " + username
-
+			return "Your rank is " + str(count) + " out of " + str(len(sortedUsers)-1) + " with " + str(user["points"]) + " doop dollars " + username
 		count += 1
 	return "You are unranked " + username
 

@@ -8,8 +8,7 @@ import SongList
 from Mission import checkUser
 from Mission import getLevel
 
-from Quote import print_quote
-from Quote import add_quote
+from Quote import Quote
 
 from Raffle import Raffle
 from Raffle import getBet
@@ -40,6 +39,7 @@ TODAYS_ROLLS_FILE = "./Data/TodaysRolls.txt"
 SESSION_FILE = "./Data/SessionStats.ini"
 ALLTIME_FILE = "./Data/AllTimeStats.ini"
 LOG_FILE = create_log()
+
 KAPPA_FACES = set_kappa() 
 TotalKappaMessages = 0
 OneHand = False
@@ -103,10 +103,10 @@ def hasBadWord(message):
 	
 
 
-def message_handler(irc, s, username, message, mission, slots, raffle, songList):
+def message_handler(irc, s, username, message, mission, slots, raffle, songList, quote):
 	log(username, message)
 	ban = hasBadWord(message)
-	global TotalKappaMessages, OneHand, Raffle
+	global TotalKappaMessages, OneHand, Raffle, Quote
 
 	if ban != 0:
 		if ban == 1:
@@ -159,22 +159,35 @@ def message_handler(irc, s, username, message, mission, slots, raffle, songList)
 
 
 
-	#TODO FIX "!quote123" bs
-	#quote commands
-	if message.startswith("!quote "):
-		quoteIndex = None
-		
-		if message != "!quote":
-			try:
-				quoteIndex = int(message.split(" ")[1].strip("\n"))
-			except ValueError:
-				send_message(s, irc, "Please use a positive integer when searching quotes " + username)
-				return
-		
-		send_message(s, irc, print_quote(quoteIndex, username))
 
+	#quote commands
+	if quote.active == True:
+		print("QUOTE IS True")
+
+	if message == ("!quotelist"):
+		send_message(s, irc, "All of the quotes for the bot can be found here https://pastebin.com/k6ke3pfB")
+	
+	elif message == "!quote" and quote.active == False:
+		quote.run(s, irc, None, username)
+	
+	elif message.startswith("!quote ") and quote.active == False:
+		quoteIndex = None
+
+		try:
+			quoteIndex = int(message.split(" ")[1].strip("\n"))
+		except ValueError:
+			send_message(s, irc, "Please use a positive integer when searching quotes " + username)
+			return
+		
+		quote.run(s, irc, quoteIndex, username)
+		
 
 	elif message.startswith("!addquote "):
+		modCheck = User(username)
+
+		if modCheck.mod == False:
+			return
+
 		print("message before: " + message)
 		message = message.split("!addquote ")[1].strip("\n")
 		print("message after: " + message)
@@ -389,7 +402,7 @@ def message_handler(irc, s, username, message, mission, slots, raffle, songList)
 		if checking.xp == None:
 			send_message(s, irc, username + " has no xp! Do some missions!")
 		else:
-			send_message(s, irc, username + " has " + str(checking.xp) + " xp!")
+			send_message(s, irc, username + " is level " + str(checking.level) + " with " + str(checking.xp) + " total xp! " + username + " needs " + checking.remainder + " xp to level up!")
 
 	elif message == "!mytreasure":
 		checking = User(username)

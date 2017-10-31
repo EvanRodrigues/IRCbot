@@ -1,26 +1,46 @@
+import time
+import threading
+
 from random import randint
+from Tools import send_message
 
 QUOTE_FILE = "./Data/Quotes.txt"
 
 
-#add a timer
-def print_quote(index, username):
-	totalQuotes = count_quotes()
-	file = open(QUOTE_FILE, encoding="utf8")
 
-	if index == None:
-		index = randint(1,totalQuotes)
+class Quote():
+	def __init__(self):
+		self.active = False
 
-	if totalQuotes < index or index < 1:
-		return "Please choose an integer between 1 and " + str(totalQuotes) + " " + username
 
-	for line in file:
-		if line.startswith(str(index)):
-			quote = line.split("=")[1].strip("\n")
-			file.close()
-			return "Quote " + str(index) + " - " + quote
 
-	file.close()
+	def print_quote(self, socket, irc, index, username):
+		self.active = True
+		file = open(QUOTE_FILE, encoding="utf8")
+		totalQuotes = count_quotes()
+
+		if index == None:
+			index = randint(1,totalQuotes)
+
+		if totalQuotes < index or index < 1:
+			send_message(socket, irc, "Please choose an integer between 1 and " + str(totalQuotes) + " " + username)
+			self.active = False
+			return
+
+		for line in file:
+			if line.startswith(str(index)):
+				quote = line.split("=")[1].strip("\n")
+				send_message(socket, irc, "Quote " + str(index) + " - " + quote)
+
+		file.close()
+		time.sleep(25)
+		self.active = False
+
+	def run(self, socket, irc, index, username):
+		QuoteThread = threading.Thread(target = self.print_quote, args = (socket, irc, index, username))
+		QuoteThread.start()
+
+
 
 def count_quotes():
 	file = open(QUOTE_FILE, encoding="utf8")
@@ -29,6 +49,7 @@ def count_quotes():
 	for line in file:
 		count += 1
 
+	file.close()
 	return count
 
 
@@ -40,3 +61,4 @@ def add_quote(message):
 	file.close()
 
 	return "Quote " + str(totalQuotes+1) + " has been added!"
+
