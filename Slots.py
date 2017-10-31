@@ -7,11 +7,11 @@ from Tools import remove_top_line
 import threading
 import time
 
-POINTS_FILE = "Points.txt"
-ROLLS_FILE = "Rolls.txt"
-JACKPOT_FILE = "Jackpot.txt"
-WINNER_FILE = "Winnings.txt"
-TODAYS_ROLLS_FILE = "TodaysRolls.txt"
+POINTS_FILE = "./Data/Points.txt"
+ROLLS_FILE = "./Data/Rolls.txt"
+JACKPOT_FILE = "./Data/Jackpot.txt"
+WINNER_FILE = "./Data/Winnings.txt"
+TODAYS_ROLLS_FILE = "./Data/TodaysRolls.txt"
 
 
 class Slots:

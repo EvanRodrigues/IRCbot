@@ -1,20 +1,34 @@
 from Treasure import getTreasure
+from Tools import update_treasure_file
+from Tools import update_file
+from Tools import remove_user
 
-TODAYS_ROLLS_FILE = "TodaysRolls.txt"
+TODAYS_ROLLS_FILE = "./Data/TodaysRolls.txt"
+SESSION_FILE = "./Data/SessionStats.ini"
+ALLTIME_FILE = "./Data/AllTimeStats.ini"
+USER_FILE = "./Data/Users.txt"
+POINTS_FILE = "./Data/Points.txt"
+ALLTIME_POINTS_FILE = "./Data/AllTimePoints.txt"
+TREASURE_FILE = "./Data/Treasure.txt"
+MODS_FILE = "./Data/Mods.txt"
 
 class User:
 	def __init__(self, username):
 		self.username = username
 		self.xp = self.getXP()
 		self.dollars = self.getDollars()
+		#self.allDollars = self.getAllDollars()
 		self.treasure = getTreasure(username)
 		self.level = self.getLevel()
+		self.sessionKappa = self.getSession()
+		self.allKappa = self.getAllTime()
+		self.mod = isMod(self.username)
 
 	#
 	# MAKE THESE LESS REDUNDANT! ONLY HAVE ONE GET WITH A STRING ARGUMENT
 	#
 	def getXP(self):
-		File = open("Users.txt", "r")
+		File = open("./Data/Users.txt", "r")
 
 		for line in File:
 			if line == "\n":
@@ -23,12 +37,12 @@ class User:
 			username = line.split(":")[0]
 			if username == self.username:
 				xp = line.split(":")[1]
-				return xp.strip("\n")
+				return int(xp.strip("\n"))
 
 		return 0
 
 	def getDollars(self):
-		File = open("Points.txt", "r")
+		File = open("./Data/Points.txt", "r")
 
 		for line in File:
 			if line == "\n":
@@ -37,9 +51,17 @@ class User:
 			username = line.split(":")[0]
 			if username == self.username:
 				dollars = line.split(":")[1]
-				return dollars.strip("\n")
+				return int(dollars.strip("\n"))
 
 		return 0
+
+	def getSession(self):
+		File = open(SESSION_FILE, "r")
+		return getStats(File, self.username)
+
+	def getAllTime(self):
+		File = open(ALLTIME_FILE, "r")
+		return getStats(File, self.username)
 
 	#
 	# Will return the current level the user is based on their total xp
@@ -83,3 +105,46 @@ class User:
 		return False
 
 
+#Finds the Kappa stats for a given user
+def getStats(file, username):
+	for line in file:
+		if line == "[User]\n":
+			continue
+
+		if line.split(":")[0] == username:
+			return float(line.split(":")[1])
+
+	return 0
+
+
+# Merges stats of curr with prev. 
+# updates curr's stats
+# removes prev's stats
+def mergeUsers(curr, prev):
+	for i in range(1,4):
+		update_treasure_file(curr.username, i, int(prev.treasure[i-1]))
+	
+	update_file(POINTS_FILE, curr.username, prev.dollars)
+	update_file(USER_FILE, curr.username, prev.xp)
+	update_file(SESSION_FILE, curr.username, prev.sessionKappa)
+	update_file(ALLTIME_FILE, curr.username, prev.allKappa)	
+
+	#Must remove items when thats a thing.
+	remove_user(TREASURE_FILE, prev.username)
+	remove_user(USER_FILE, prev.username)
+	remove_user(POINTS_FILE, prev.username)
+	remove_user(SESSION_FILE, prev.username)
+	remove_user(ALLTIME_FILE, prev.username)
+
+
+
+#checks if username is a mod in the channel
+def isMod(username):
+	file = open(MODS_FILE, "r")
+
+	for line in file:
+		if line.strip("\n") == username:
+			return True
+
+	file.close()
+	return False

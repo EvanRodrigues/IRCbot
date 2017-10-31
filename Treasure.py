@@ -3,10 +3,11 @@ from Tools import update_file
 from Tools import update_treasure_file
 from Tools import send_message
 
-TREASURE_FILE = "Treasure.txt"
-POINTS_FILE = "Points.txt"
+TREASURE_FILE = "./Data/Treasure.txt"
+POINTS_FILE = "./Data/Points.txt"
 
-
+# Opens up and rewards the user with the Doop Dollars in the treasure chest.
+# Returns "You have no treasure chests" if there is none to open.
 def reward(socket, irc, username):
 	totalChests = getTreasure(username)
 	if totalChests == ("0","0","0"):
@@ -22,6 +23,9 @@ def reward(socket, irc, username):
 	send_message(socket, irc, username + " found " + str(reward) + " Doop Dollars from their chests!")
 
 
+
+# Opens up every chest of the given tier that the user has.
+# Can be easier if tier was the entire tuple.
 def openChests(username, tier, totalChests):
 	reward = 0
 

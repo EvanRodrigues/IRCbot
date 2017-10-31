@@ -5,17 +5,20 @@ from Tools import append
 from Tools import clear_file
 from Tools import update_file
 from Tools import update_treasure_file
-#from Treasure import getTreasure
 from User import User
 
 import threading
 import time
 
-MISSION_FILE = "MissionUsers.txt"
-MISSION_FILE_TEMP = "MissionUsersTemp.txt"
-TREASURE_FILE = "Treasure.txt"
-USER_FILE = "Users.txt"
-POINTS_FILE = "Points.txt"
+MISSION_FILE = "./Data/MissionUsers.txt"
+MISSION_FILE_TEMP = "./Data/MissionUsersTemp.txt"
+TREASURE_FILE = "./Data/Treasure.txt"
+USER_FILE = "./Data/Users.txt"
+POINTS_FILE = "./Data/Points.txt"
+LEVEL_FILE = "./Data/Levels.txt"
+
+
+#TODO: Replace all "file.txt" to one of these FINAL variables ^^^^^^^^^^^^^^
 
 class Mission:
 	def __init__(self):
@@ -48,7 +51,7 @@ class Mission:
 		self.active = False
 		self.joinable = False
 		success(self, socket, irc)
-		clear_file("MissionUsers.txt")
+		clear_file(MISSION_FILE)
 
 		time.sleep(360)
 		send_message(socket, irc, getLevel(self.level))
@@ -60,7 +63,7 @@ class Mission:
 	# If @success is False, this returns a losing message.
 	#
 	def getMissionOutcome(self):
-		file = open("Levels.txt", "r")
+		file = open(LEVEL_FILE, "r")
 
 		for line in file:
 			if self.success == True and line.startswith("Win"):
@@ -214,7 +217,7 @@ def addUsers(output):
 	output = output[:lastComma] 
 
 	file.close()
-	clear_file("MissionUsersTemp.txt")	
+	clear_file(MISSION_FILE_TEMP)	
 	return output
 
 
@@ -277,7 +280,7 @@ def checkUser(filename, username):
 # Used to figure out the chat's current progress in the story.
 #
 def getCurrentLevel():
-	file = open("Levels.txt", "r")
+	file = open(LEVEL_FILE, "r")
 	
 	line = file.readline()
 	line.split(" ")
@@ -291,7 +294,7 @@ def getCurrentLevel():
 # Updates the current level. If the stream resets, progress wont be lost.
 #
 def setCurrentLevel(level):
-	file = open("Levels.txt", "r")
+	file = open(LEVEL_FILE, "r")
 	first = False
 	output = ""
 
@@ -304,7 +307,7 @@ def setCurrentLevel(level):
 
 
 	file.close()
-	file = open("Levels.txt", "w")
+	file = open(LEVEL_FILE, "w")
 	file.write(output)
 	file.close()
 	return
@@ -315,7 +318,7 @@ def setCurrentLevel(level):
 # Sets the Mission's scenario to a the index'th line in the 
 #
 def getLevel(index):
-	file = open("Levels.txt", "r")
+	file = open(LEVEL_FILE, "r")
 	count = 0
 
 	for line in file:

@@ -1,7 +1,10 @@
 import socket
 
+
+from SongList import SongList
 from Mission import Mission
 from Slots import Slots
+from Raffle import Raffle
 from MessageHandler import message_handler
 
 class ircConnection:
@@ -15,7 +18,7 @@ class ircConnection:
 
 #Just incase i stream some coding, i dont want the password out in the open.
 def getPass():
-	File = open("ConnectionVars.txt", "r")
+	File = open("./Data/ConnectionVars.txt", "r")
 	for line in File:
 		return line
 
@@ -26,6 +29,17 @@ def stripHighlight(message):
 		message = message[11:-4]
 		
 	return message
+
+
+#Fixes issue if a user types a ':' in chat.
+def combineParts(parts):
+	output = ""
+	for i in range(2, len(parts)):
+		if i > 2:
+			output += ":" + parts[i]
+		else:
+			output += parts[i]
+	return output
 
 
 
@@ -40,6 +54,8 @@ s.send(bytes("JOIN #" + irc.CHANNEL + "\r\n", "UTF-8"))
 #Global mission/slots variable since there can only be one mission at a time.
 mission = Mission()
 slots = Slots(s, irc)
+raffle = Raffle(s, irc, 0, False, None, 200)
+songList = SongList(s, irc)
 
 while True:
 	line = str(s.recv(1024))
@@ -53,10 +69,10 @@ while True:
 			continue
 
 		if "QUIT" not in parts[1] and "JOIN" not in parts[1] and "PART" not in parts[1]:
-		 	message = parts[2][:len(parts[2])]
-		 	message = stripHighlight(message)
+			message = combineParts(parts)
+			message = stripHighlight(message)
 
 		usernamesplit = parts[1].split("!")
 		username = usernamesplit[0]
 		print(username + ": " + message)
-		message_handler(irc, s, username, message, mission, slots)
+		message_handler(irc, s, username, message, mission, slots, raffle, songList)

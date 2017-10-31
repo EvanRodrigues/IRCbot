@@ -1,9 +1,21 @@
 import datetime
+import sys
+from urllib.request import Request, urlopen
 from os.path import exists
+
+
+TREASURE_FILE = "./Data/Treasure.txt"
+KAPPA_FACES_FILE = "./Data/KappaFaces.txt"
+POINTS_FILE = "./Data/Points.txt"
+
 
 def send_message(socket, irc, message):
 	socket.send(bytes("PRIVMSG #" + irc.CHANNEL + " :" + message + "\r\n", "UTF-8"))
-
+	try:
+		print("doopbot: " + message)
+	except UnicodeEncodeError:
+		non_bmp_map = dict.fromkeys(range(0x10000, sys.maxunicode + 1), 0xfffd) #handles emojis in the console.
+		print("doopbot: " + str(message.translate(non_bmp_map)))
 
 
 #
@@ -39,15 +51,112 @@ def create_log():
 			file.write("File created \n\r")
 			file.close()
 			return filename
-	
-
-
-
 
 
 def get_month(month):
 	months = {"01": "Jan", "02": "Feb", "03": "Mar", "04": "Apr", "05": "May", "06": "Jun", "07": "Jul", "08": "Aug", "09": "Sep", "10": "Oct", "11": "Nov", "12": "Dec"}
 	return months[month]
+
+
+
+
+
+#Imports the points for each user from the points file.
+def importPoints():
+	users = []
+	file = open(POINTS_FILE, "r")
+
+	for line in file:
+		username = line.split(":")[0]
+		points = line.split(":")[1].strip("\n")
+		temp = {'username': username, 'points': int(points)}
+		users.append(temp)
+
+	return users
+
+
+
+def format_five(sortedUsers):
+	output = "(1) - " + sortedUsers[0]['username'] + ": " + str(sortedUsers[0]['points']) + " "
+	output += "(2) - " + sortedUsers[1]['username'] + ": " + str(sortedUsers[1]['points']) + " "
+	output += "(3) - " + sortedUsers[2]['username'] + ": " + str(sortedUsers[2]['points']) + " "
+	output += "(4) - " + sortedUsers[3]['username'] + ": " + str(sortedUsers[3]['points']) + " "
+	output += "(5) - " + sortedUsers[4]['username'] + ": " + str(sortedUsers[4]['points']) + " "
+
+	return output
+
+
+def get_rank(username, sortedUsers):
+	count = 0
+
+	for user in sortedUsers:
+		if user["username"] == username:
+			count += 1
+			print(username)
+			return "Your rank is " + str(count) + " out of " + str(len(sortedUsers)) + " with " + str(user["points"]) + " doop dollars " + username
+
+		count += 1
+	return "You are unranked " + username
+
+
+#Sorts the users by their points. 
+#The user with the most points will be at the start of the array
+def sort_users():
+	users = importPoints()
+	mid = int(len(users) / 2)
+	left = users[0:mid]
+	right = users[mid:]
+
+	return mergeSort(left, right)
+
+
+def mergeSort(left, right):
+	#default to left and right incase they have length 1
+	sortedL = left
+	sortedR = right 
+
+	if len(left) > 1:
+		midL = int(len(left) / 2)
+		leftL = left[0:midL]
+		leftR = left[midL:]
+		sortedL = mergeSort(leftL, leftR)
+
+	if len(right) > 1:
+		midR = int(len(right) / 2)
+		rightL = right[0:midR]
+		rightR = right[midR:]
+		sortedR = mergeSort(rightL, rightR)
+
+	return merge(sortedL, sortedR)
+
+
+def merge(left, right):
+	output = []
+	countL = 0
+	countR = 0
+
+	while True:
+		#add right because there is nothing in left anymore
+		if countL == len(left):
+			output.append(right[countR])
+			countR += 1
+		elif countR == len(right):
+			output.append(left[countL])
+			countL += 1	
+		elif left[countL]['points'] >= right[countR]['points']:
+			output.append(left[countL])
+			countL += 1	
+		elif right[countR]['points'] >= left[countL]['points']:
+			output.append(right[countR])
+			countR += 1
+
+		if countL == len(left) and countR == len(right):
+			break
+
+	return output
+
+
+
 
 
 #
@@ -65,7 +174,12 @@ def update_file(filename, target, value):
 			continue
 
 		user = line.split(":")[0]
-		oldPoints = int(line.split(":")[1])
+		oldPoints = 0.0
+		
+		try:
+			oldPoints = int(line.split(":")[1])
+		except ValueError:
+			oldPoints = float(line.split(":")[1])
 
 		if user == target:
 			newPoints = value + oldPoints
@@ -94,12 +208,37 @@ def update_file(filename, target, value):
 
 
 #
+# Removes the target's stats in the file. Used for the merge command.
+#
+def remove_user(filename, target):
+	output = ""
+	file = open(filename, "r")
+
+
+	for line in file:
+		if line.startswith("*Tier"):
+			output += line
+			continue
+
+		if line.split(":")[0] != target:
+			output += line
+
+	file.close()
+
+	newFile = open(filename, "w")
+	newFile.write(output)
+	newFile.close()
+
+	return
+
+
+
+#
 # TODO: 
-# Updates when they have treasure chest already
-# Adds the user in the correct section if they have never had a chest of that tier.
+# Replace @tier with a tuple so there doesn't need to be extra iterations of the file.
 #
 def update_treasure_file(target, tier, value):
-	file = open("Treasure.txt", "r")
+	file = open(TREASURE_FILE, "r")
 
 	found = False
 	notFound = False
@@ -110,17 +249,17 @@ def update_treasure_file(target, tier, value):
 		#User has never had a chest of the tier being added.	
 		if line == "\n" and tier == int(currentTier) and found == False:
 			newLine = target + ":" + str(value) + "\n" +"\n"
-			temp = temp + newLine
+			temp += newLine
 			continue
 
 		elif line == "\n":
-			temp = temp + line
+			temp += line
 			continue
 
 		#Change currentTier
 		if line.startswith("*Tier"):
 			currentTier = line.split(" ")[1][0]
-			temp = temp + line
+			temp += line
 			continue
 
 		user = line.split(":")[0]
@@ -131,15 +270,14 @@ def update_treasure_file(target, tier, value):
 			newPoints = value + oldPoints
 			newLine = user + ":" + str(newPoints) + "\n"
 	
-			temp = temp + newLine
+			temp += newLine
 			found = True
 		else:
-			temp = temp + line
-
+			temp += line
 
 
 	file.close() #close read-only mode
-	file = open("Treasure.txt", "w") #open in write-only mode and update the file.
+	file = open(TREASURE_FILE, "w") #open in write-only mode and update the file.
 	file.write(temp)
 	file.close()
 
@@ -175,3 +313,43 @@ def remove_top_line(filename):
 #
 def clear_file(filename):
 	open(filename, "w").close()
+
+
+
+def convert_file(filename):
+	file = open(filename, "r")
+	output = ""
+
+	for line in file:
+		if line.startswith("[User]"):
+			continue
+
+		info = line.split("=")
+		output += ":".join(info)
+
+	file.close()
+
+	file = open(filename, "w")
+	file.write(output)
+	file.close()
+
+
+def set_kappa():
+	file = open(KAPPA_FACES_FILE, "r")
+	output = []
+
+	for line in file:
+		output.append(line.strip("\n"))
+		
+	return output
+
+
+
+def contact_api():
+	URL = 'https://api.twitch.tv/kraken/channels/doopian/follows'
+
+	request = Request(URL)
+	request.add_header('Accept', 'application/vnd.twitchtv.v3+json')
+	request.add_header('Client-ID', '9a37xe8mmfymaqiwjt3oyfgpuih6za')
+	data = urlopen(request).read()
+	print(data)
