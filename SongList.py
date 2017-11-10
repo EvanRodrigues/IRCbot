@@ -1,5 +1,13 @@
 from Song import Song
 from Tools import send_message
+from Tools import update_file
+
+
+POINTS_FILE = "./Data/Points.txt"
+
+
+#emoji support
+
 
 class SongList:
 	def __init__(self, s, irc):
@@ -11,7 +19,15 @@ class SongList:
 		self.head = None
 		self.tail = None
 		self.length = 0
-		self.current = ""
+		self.on = False
+		self.current = None
+		self.vipUsers = {}
+
+
+
+	def start(self):
+		self.on = True
+
 
 
 
@@ -59,9 +75,12 @@ class SongList:
 
 
 	#Checks for user duplicates and song name duplicates
-	#TODO: check for duplicates in the vip list as well
-	def findDuplicates(self, title, user):
+	def findDuplicates(self, vip, title, user):
 		ptr = self.head
+
+		if vip == True:
+			ptr = self.vipHead
+
 
 		while ptr != None:
 			if ptr.title == title:
@@ -69,22 +88,25 @@ class SongList:
 			elif ptr.user == user:
 				return "You already have a song on the list " + user
 
+			ptr = ptr.next
+
 		return ""
 
 
 
 	#Normal song list stuff
 	def addSong(self, vip, target, username):
-		#duplicateError = self.findDuplicates(target, username)
+		duplicateError = self.findDuplicates(vip, target, username)
 
-		#if duplicateError != "":
-		#	send_message(self.s, self.irc, duplicateError)
-		#	return 
-
+		if duplicateError != "":
+			send_message(self.s, self.irc, duplicateError)
+			return 
 
 		song = Song(target, username)
 		
 		if vip == True:
+			update_file(POINTS_FILE, username, -1000)
+
 			if self.vipHead == None:
 				self.vipHead = song
 			else:
@@ -101,13 +123,17 @@ class SongList:
 			self.tail = song
 			self.length += 1
 
-		send_message(self.s, self.irc, song.title + " has been added!")
 
+
+		if vip == True:
+			send_message(self.s, self.irc, song.title + " has been added to the VIP list! 1000 Doop Dollars have been deducted from your balance " + username)
+		else:
+			send_message(self.s, self.irc, song.title + " has been added!")
 
 
 	#Mod only command that removes a song based on position on the list
 	#todo remove song by song title -> add a try and catch block to check variable type
-	def removeSong(self, vip, target):
+	def removeSong(self, vip, pop, target):
 		ptr = None
 		prev = None
 		count = 1
@@ -120,11 +146,20 @@ class SongList:
 			ptr = self.head
 			prev = self.head
 
-		if ptr == None:
-			print("Songlist is empty. Theres nothing to remove.")
+		if ptr == None and pop == True:
+			self.setCurrentSong(None)
+			send_message(self.s, self.irc, "The request list is empty now! Get your requests in! Krappa b")
+		elif ptr == None and pop == False:
+			send_message(self.s, self.irc, "Songlist is empty. Theres nothing to remove.")
 
 		while ptr != None:
 			if count == target and vip == True:
+				if pop == True:
+					self.setCurrentSong(ptr)
+				else:
+					update_file(POINTS_FILE, ptr.user, 1000)
+					send_message(self.s, self.irc, ptr.title + " has been removed from the VIP list! 1000 Doop Dollars have been added to " + ptr.user +"'s balance")
+
 				if ptr == self.vipHead:
 					self.vipHead = self.vipHead.next
 					return
@@ -135,6 +170,10 @@ class SongList:
 						self.vipTail = prev
 
 			elif count == target and vip == False:
+				if pop == True:
+					self.setCurrentSong(ptr)
+				else:
+					send_message(self.s, self.irc, ptr.title + " has been removed from the list!")
 				if ptr == self.head:
 					self.head = self.head.next
 					return
@@ -147,3 +186,11 @@ class SongList:
 			count += 1
 			prev = ptr
 			ptr = ptr.next	
+
+
+
+	def setCurrentSong(self, song):
+		self.current = song
+		
+		if song != None:
+			send_message(self.s, self.irc, "The next song is " + song.title + " requested by " + song.user)

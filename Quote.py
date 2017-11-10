@@ -31,6 +31,7 @@ class Quote():
 			if line.startswith(str(index)):
 				quote = line.split("=")[1].strip("\n")
 				send_message(socket, irc, "Quote " + str(index) + " - " + quote)
+				break
 
 		file.close()
 		time.sleep(25)

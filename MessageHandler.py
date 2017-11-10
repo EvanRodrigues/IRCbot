@@ -9,6 +9,7 @@ from Mission import checkUser
 from Mission import getLevel
 
 from Quote import Quote
+from Quote import add_quote
 
 from Raffle import Raffle
 from Raffle import getBet
@@ -125,7 +126,7 @@ def message_handler(irc, s, username, message, mission, slots, raffle, songList,
 	if "OneHand" in message and OneHand == True:
 		tokens = message.split(" ")
 		for word in tokens:
-			if word == "OneHand"  or word == "OneHandWeen" and OneHand == True:
+			if word == "OneHand" and OneHand == True:
 				send_message(s, irc, "/timeout " + username + " 1")
 				break
 
@@ -135,25 +136,62 @@ def message_handler(irc, s, username, message, mission, slots, raffle, songList,
 
 
 	#song request code
-	if message.startswith("!request ") and username == "doopian":
+	if message.startswith("!request "):
 		song = message[9:] #super hard-coded, but the command is not likely to change
-		songList.addSong(False, song, username)
 
-	if message.startswith("!vipRequest ") and username == "doopian":
-		song = message[12:]
-		songList.addSong(True, song, username)
+		if len(song) > 70:
+			send_message(s, irc, "That song title is too long. Shorten that shit pls Krappa")
+		else:
+			songList.addSong(False, song, username)
 
-	if message.startswith("!remove ") and username == "doopian":
-		target = message[8:]
-		songList.removeSong(False, target)
+	if message.startswith("!vipreq "):
+		user = User(username)
+		song = message[8:]
 
-	if message.startswith("!vipRemove ") and username == "doopian":
-		target = message[11:]
-		songList.removeSong(True, target)
+		if len(song) > 50:
+			send_message(s, irc, "That song title is too long. Shorten that shit pls Krappa")
+		else:
+			if user.dollars < 1000:
+				send_message(s, irc, "You do not have enough Doop Dollars to VIP request " + username)
+			else:
+				songList.addSong(True, song, username)
+
+	if message.startswith("!remove "):
+		user = User(username)
+
+		if user.mod == True:
+			target = message[8:]
+			songList.removeSong(False, target)
+
+	if message.startswith("!viprem "):
+		user = User(username)
+
+		if user.mod == True:
+			target = message[8:]
+			songList.removeSong(True, target)
 
 
-	if message == ("!list") and username == "doopian":
+	#change song command for mods
+
+
+	if message == "!list":
 		send_message(s, irc, songList.getList())
+
+
+	if message == "!pop":
+		user = User(username)
+
+		if user.mod == True:
+			if songList.vipHead != None:
+				songList.removeSong(True, True, 1)
+			else:
+				songList.removeSong(False, True, 1)
+
+	if message == "!currentsong":
+		if songList.current != None:
+			send_message(s, irc, "Current song is: " + songList.current.title + " requested by " + songList.current.user)
+		else:
+			send_message(s, irc, "There is no song being played currently")
 
 
 
@@ -161,9 +199,6 @@ def message_handler(irc, s, username, message, mission, slots, raffle, songList,
 
 
 	#quote commands
-	if quote.active == True:
-		print("QUOTE IS True")
-
 	if message == ("!quotelist"):
 		send_message(s, irc, "All of the quotes for the bot can be found here https://pastebin.com/k6ke3pfB")
 	
@@ -188,9 +223,7 @@ def message_handler(irc, s, username, message, mission, slots, raffle, songList,
 		if modCheck.mod == False:
 			return
 
-		print("message before: " + message)
 		message = message.split("!addquote ")[1].strip("\n")
-		print("message after: " + message)
 		send_message(s, irc, add_quote(message))
 
 
@@ -425,6 +458,8 @@ def message_handler(irc, s, username, message, mission, slots, raffle, songList,
 	### RANDOM COMMANDS ###
 	elif message == "!commands":
 		send_message(s, irc, "The commands for doopbot are found here: https://pastebin.com/k9cPVTdS")
+	elif message == "!subscribe":
+		send_message(s, irc, "Here's a link to subscribe if you're on mobile: https://subs.twitch.tv/doopian")
 	elif message == "!protoss":
 		send_message(s, irc, "Protoss are Love, Protoss are Life, for Aiur!!")
 	elif message == "!zerg":
@@ -456,7 +491,7 @@ def message_handler(irc, s, username, message, mission, slots, raffle, songList,
 	elif message == "!thumbsdown":
 		send_message(s, irc, "Krappa p Krappa p Krappa p")
 	elif message == "!schedule":
-		send_message(s, irc, "Doopian streams randomly Krappa")
+		send_message(s, irc, "7pm - 10pm on weekdays. 4pm - 9pm on Saturday. All times in EST")
 	elif message == "!plugdj":
 		send_message(s, irc, "request songs here -> https://plug.dj/doopian-song-requests")
 	elif message == "!customs":
