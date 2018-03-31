@@ -130,6 +130,7 @@ def getStats(file, username):
 # Merges stats of curr with prev. 
 # updates curr's stats
 # removes prev's stats
+# TODO: make it so curr stats are added with prev stats
 def mergeUsers(curr, prev):
 	for i in range(1,4):
 		update_treasure_file(curr.username, i, int(prev.treasure[i-1]))

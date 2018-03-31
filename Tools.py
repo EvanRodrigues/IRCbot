@@ -1,4 +1,5 @@
 import datetime
+import time
 import sys
 from urllib.request import Request, urlopen
 from os.path import exists
@@ -7,6 +8,10 @@ from os.path import exists
 TREASURE_FILE = "./Data/Treasure.txt"
 KAPPA_FACES_FILE = "./Data/KappaFaces.txt"
 POINTS_FILE = "./Data/Points.txt"
+SONG_FILE = "B:/Clone Hero Stuff/Clone Hero/currentsong.txt"
+CURRENT_SONG_FORMATTED = "./Data/CurrentSong.txt"
+
+uptime = 0
 
 
 def send_message(socket, irc, message):
@@ -16,6 +21,84 @@ def send_message(socket, irc, message):
 	except UnicodeEncodeError:
 		non_bmp_map = dict.fromkeys(range(0x10000, sys.maxunicode + 1), 0xfffd) #handles emojis in the console.
 		print("doopbot: " + str(message.translate(non_bmp_map)))
+
+
+
+def set_uptime():
+	global uptime
+
+	while True:
+		time.sleep(1)
+		uptime += 1
+
+
+
+def get_uptime():
+	global uptime
+	return format_time(uptime)
+
+
+
+def format_time(uptime):
+	output = "uptime: "
+	hours = 0
+	minutes = 0
+
+	if uptime < 60:
+		output += str(uptime) + " secs btw"
+		return output
+
+	while uptime > 60:
+		if uptime >= 3600:
+			hours += 1
+			uptime -= 3600
+		elif uptime >= 60:
+			minutes += 1
+			uptime -= 60
+
+
+	if hours > 0:
+		if hours == 1:
+			output += "1 hr "
+		else:
+			output += str(hours) + " hrs "
+	if minutes > 0:
+		if minutes == 1:
+			output += "1 min "
+		else:
+			output += str(minutes) + " mins "
+
+	return output + "btw"
+
+
+
+
+
+def current_song():
+	while True:
+		file = open(SONG_FILE, "r")
+		line = file.read()
+		file.close()
+
+		if line != "":
+			song = line.split("\n")[0]
+			artist = line.split("\n")[1]
+			
+			file = open(CURRENT_SONG_FORMATTED, "w")
+			file.write(artist + " - " + song)
+			file.close()
+		else:
+			file = open(CURRENT_SONG_FORMATTED, "w")
+			file.write("NOTHING IS BEING PLAYED RIGHT NOW XD")
+			file.close()
+		
+		time.sleep(1)
+
+
+
+
+	
+
 
 
 #

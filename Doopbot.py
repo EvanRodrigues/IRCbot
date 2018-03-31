@@ -1,12 +1,18 @@
 import socket
+import threading
+import time
+import datetime
 
 
+from AutoPoints import AutoPoints
 from SongList import SongList
 from Mission import Mission
 from Slots import Slots
 from Raffle import Raffle
 from Quote import Quote
-from MessageHandler import message_handler
+from MessageHandler import MessageHandler
+from MessageHandler import log
+
 
 class ircConnection:
 	def __init__(self):
@@ -51,21 +57,49 @@ s.connect((irc.HOST, irc.PORT))
 s.send(bytes("PASS " + irc.PASS + "\r\n", "UTF-8"))
 s.send(bytes("NICK " + irc.NICK + "\r\n", "UTF-8"))
 s.send(bytes("JOIN #" + irc.CHANNEL + "\r\n", "UTF-8"))
+s.send(bytes("CAP REQ :twitch.tv/membership\r\n", "UTF-8"))
+s.send(bytes("CAP REQ :twitch.tv/tags\r\n", "UTF-8"))
+s.send(bytes("CAP REQ :twitch.tv/commands\r\n", "UTF-8"))
+
 
 #Global mission/slots variable since there can only be one mission at a time.
-mission = Mission()
+#mission = Mission()
+#slots = Slots(s, irc)
+#raffle = Raffle(s, irc, 0, False, None, 200)
+#songList = SongList(s, irc)
+
 quote = Quote()
-slots = Slots(s, irc)
-raffle = Raffle(s, irc, 0, False, None, 200)
-songList = SongList(s, irc)
+mh = MessageHandler()
+ap = AutoPoints()
+ap.run()
+
+gameThread = threading.Thread(target = mh.get_game , args = ())
+gameThread.daemon = True
+gameThread.start()
 
 while True:
 	line = str(s.recv(1024))
 	if "End of /NAMES list" in line:
 		break
 
+#
+# TODO
+# Have doopbot Klappa for each month someone is subscribed
+# Points for new followers (Web hooks)
+# Make message handler NOT object oriented
+# subbing/resubbing messages from chat not showing? can test with RAIDS
+#
 while True:
 	for line in str(s.recv(1024)).split('\\r\\n'):
+		log("twitch server", line)
+		print(line)
+		if line == "b'PING :tmi.twitch.tv":
+			s.send(bytes("PONG :tmi.twitch.tv \r\n", "UTF-8"))
+			continue
+		elif "JOIN #doopian" in line or "PART #doopian" in line:
+			ap.updateChatters(line)
+
+
 		parts = line.split(':')
 		if len(parts) < 3:
 			continue
@@ -77,4 +111,4 @@ while True:
 		usernamesplit = parts[1].split("!")
 		username = usernamesplit[0]
 		print(username + ": " + message)
-		message_handler(irc, s, username, message, mission, slots, raffle, songList, quote)
+		mh.message_handler(irc, s, line, quote)

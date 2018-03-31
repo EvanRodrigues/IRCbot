@@ -31,11 +31,11 @@ def openChests(username, tier, totalChests):
 
 	for i in range(0, totalChests):
 		if tier == 1:
-			reward = reward + randint(1,15)
+			reward = reward + randint(5, 25)
 		elif tier == 2:
-			reward = reward + randint(15,50)
+			reward = reward + randint(25, 75)
 		else:
-			reward = reward + randint(50, 100)
+			reward = reward + randint(75, 250)
 
 	return reward
 

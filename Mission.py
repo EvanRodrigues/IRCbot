@@ -86,7 +86,8 @@ class Mission:
 	#
 	def reward(self, socket, irc, outcome):
 		file = open(MISSION_FILE, "r")
-		rand = randint(1, 10)
+		#Make this depend on the level
+		rand = randint(5, 25)
 		output = ""
 		chestOutput = ""
 
@@ -103,7 +104,8 @@ class Mission:
 				output = output + user.username + " has advanced to level " + str(updatedLvl) + "! "
 
 
-		chestOutput = chestOutput[0:-2] + '.'
+		if chestOutput != "":
+			chestOutput = chestOutput[0:-2] + '.'
 
 		file.close()
 		send_message(socket, irc, outcome + " You each earn 25xp, and " + str(rand) + " Doop Dollars!")
@@ -198,6 +200,7 @@ class Mission:
 	#
 	def run(self, socket, irc):
 		MissionThread = threading.Thread(target = self.start, args = (socket, irc))
+		MissionThread.daemon = True
 		MissionThread.start()
 
 
