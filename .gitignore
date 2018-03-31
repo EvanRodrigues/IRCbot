@@ -1,1 +1,13 @@
 *.txt
+ConnectionVars.py
+
+Backups/
+Data/
+
+certifi/
+chardet/
+cryptography/
+idna/
+requests/
+urllib3/
+__pycache__/
