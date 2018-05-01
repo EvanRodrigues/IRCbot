@@ -1,8 +1,7 @@
 import socket
-import threading
 import time
+import threading
 import datetime
-
 
 from AutoPoints import AutoPoints
 from SongList import SongList
@@ -10,7 +9,10 @@ from Mission import Mission
 from Slots import Slots
 from Raffle import Raffle
 from Quote import Quote
-from MessageHandler import MessageHandler
+
+
+from MessageHandler import get_game
+from MessageHandler import message_handler
 from MessageHandler import log
 
 
@@ -69,11 +71,10 @@ s.send(bytes("CAP REQ :twitch.tv/commands\r\n", "UTF-8"))
 #songList = SongList(s, irc)
 
 quote = Quote()
-mh = MessageHandler()
 ap = AutoPoints()
 ap.run()
 
-gameThread = threading.Thread(target = mh.get_game , args = ())
+gameThread = threading.Thread(target = get_game , args = ())
 gameThread.daemon = True
 gameThread.start()
 
@@ -86,29 +87,21 @@ while True:
 # TODO
 # Have doopbot Klappa for each month someone is subscribed
 # Points for new followers (Web hooks)
-# Make message handler NOT object oriented
-# subbing/resubbing messages from chat not showing? can test with RAIDS
 #
 while True:
-	for line in str(s.recv(1024)).split('\\r\\n'):
-		log("twitch server", line)
-		print(line)
-		if line == "b'PING :tmi.twitch.tv":
+	for rawLine in str(s.recv(1024).decode("utf8")).split('\\r\\n'):
+		message = str(rawLine.encode("utf8"))
+		print("message: " + message)
+		
+		if message.startswith("b'PING :tmi.twitch.tv"):
 			s.send(bytes("PONG :tmi.twitch.tv \r\n", "UTF-8"))
 			continue
-		elif "JOIN #doopian" in line or "PART #doopian" in line:
-			ap.updateChatters(line)
-
-
-		parts = line.split(':')
-		if len(parts) < 3:
+		elif "JOIN #doopian" in message or "PART #doopian" in message:
+			ap.updateChatters(message)
+			continue
+		elif "display-name=doopbot" in message or message.startswith("b':jtv "):
 			continue
 
-		if "QUIT" not in parts[1] and "JOIN" not in parts[1] and "PART" not in parts[1]:
-			message = combineParts(parts)
-			message = stripHighlight(message)
-
-		usernamesplit = parts[1].split("!")
-		username = usernamesplit[0]
-		print(username + ": " + message)
-		mh.message_handler(irc, s, line, quote)
+		message = message[:-5]
+		message = stripHighlight(message)
+		message_handler(irc, s, rawLine, message, quote)

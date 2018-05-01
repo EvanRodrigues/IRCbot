@@ -12,8 +12,6 @@ class Quote():
 	def __init__(self):
 		self.active = False
 
-
-
 	def print_quote(self, socket, irc, index, username):
 		self.active = True
 		file = open(QUOTE_FILE, encoding="utf8")
@@ -42,6 +40,15 @@ class Quote():
 		QuoteThread.start()
 
 
+def getQuote(line):
+	parts = line.split(":")
+	total_parts = len(parts)
+	quote= parts[total_parts - 1]
+
+	quote = quote.split(" ")[1].strip("\n\r")
+
+	return quote
+
 
 def count_quotes():
 	file = open(QUOTE_FILE, encoding="utf8")
@@ -56,9 +63,13 @@ def count_quotes():
 
 def add_quote(message):
 	totalQuotes = count_quotes()
+	quote = getQuote(message)
 
-	file = open(QUOTE_FILE, "a")
-	file.write(str(totalQuotes+1) + "=" + message + "\n")
+
+	print(quote.encode("utf8"))
+
+	file = open(QUOTE_FILE, "a", encoding="utf8")
+	file.write(str(totalQuotes+1) + "=" + quote.replace('\\', '') + "\n")
 	file.close()
 
 	return "Quote " + str(totalQuotes+1) + " has been added!"

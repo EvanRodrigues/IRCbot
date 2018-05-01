@@ -24,13 +24,17 @@ class AutoPoints:
 
 
 	def updateChatters(self, line):
-		user = rem_extra_info(line.split(" ")[0])
-		action = line.split(" ")[1]
+		parts = line.split("\\r\\n")
 
-		if action == "JOIN":
-			self.chatters.append(user)
-		if action == "PART":
-			self.chatters.remove(user)	
+		for part in parts:
+			if "JOIN" in part:
+				user = part.split(":")[1].split("!")[0]
+				self.chatters.append(user)
+			elif "PART" in part:
+				user = part.split(":")[1].split("!")[0]
+				self.chatters.remove(user)
+			else:
+				continue
 
 
 	#

@@ -95,8 +95,6 @@ def current_song():
 		time.sleep(1)
 
 
-
-
 	
 
 
