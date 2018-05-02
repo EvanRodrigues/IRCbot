@@ -80,9 +80,14 @@ def get_tag(target, line):
 
 def getMessage(line):
 	parts = line.split("#doopian :")
-	message = parts[1]
 
-	return message
+	try:
+		message = parts[1]
+		return message
+	except:
+		return ""
+
+	
 
 
 
@@ -92,10 +97,10 @@ def message_handler(irc, s, utfLine, line, quote):
 	username = get_tag("display-name", line)
 	bits = get_tag("bits", line)
 	message = getMessage(line)
-	print(username + ": " + message)
 
-	if username != None:
-		log(username, message)	
+	if message != "" and username != None:
+		print(username + ": " + message)
+		log(username, message)
 		
 
 	if bits != None:
@@ -203,8 +208,6 @@ def message_handler(irc, s, utfLine, line, quote):
 		send_message(s, irc, "Follow Doopian at http://twitter.com/doopian")
 	elif message == "!youtube":
 		send_message(s, irc, "Subscribe to Doopian's channel for Guitar Hero related videos at https://youtube.com/doopian")
-	elif message == "!facebook":
-		send_message(s, irc, "Like Doopian's facebook here https://www.facebook.com/doopian")
 	elif message == "!instagram":
 		send_message(s, irc, "https://www.instagram.com/the_kappa_fan_club")
 	elif message == "!discord":
@@ -214,4 +217,3 @@ def message_handler(irc, s, utfLine, line, quote):
 		send_message(s, irc, "Follow Doopian at https://twitter.com/doopian")
 		send_message(s, irc, "Subscribe to Doopian's YouTube channel at https://youtube.com/doopian")
 		send_message(s, irc, "Follow Doopian on instagram https://www.instagram.com/the_kappa_fan_club")
-		send_message(s, irc, "Like Doopian's facebook here http://www.facebook.com/doopian")

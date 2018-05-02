@@ -91,15 +91,13 @@ while True:
 while True:
 	for rawLine in str(s.recv(1024).decode("utf8")).split('\\r\\n'):
 		message = str(rawLine.encode("utf8"))
-		print("message: " + message)
+		print("SERVER RESPONSE: " + message)
 		
 		if message.startswith("b'PING :tmi.twitch.tv"):
 			s.send(bytes("PONG :tmi.twitch.tv \r\n", "UTF-8"))
 			continue
 		elif "JOIN #doopian" in message or "PART #doopian" in message:
 			ap.updateChatters(message)
-			continue
-		elif "display-name=doopbot" in message or message.startswith("b':jtv "):
 			continue
 
 		message = message[:-5]
