@@ -6,12 +6,35 @@ from os.path import exists
 
 
 TREASURE_FILE = "./Data/Treasure.txt"
+KAPPA_COUNT_FILE = "./Data/Kappa.txt"
 KAPPA_FACES_FILE = "./Data/KappaFaces.txt"
 POINTS_FILE = "./Data/Points.txt"
 SONG_FILE = "B:/Clone Hero Stuff/Clone Hero/currentsong.txt"
 CURRENT_SONG_FORMATTED = "./Data/CurrentSong.txt"
 
+KAPPAS = ["Kappa", "Keepo", "KappaRoss", "KappaPride", "KappaClaus", "doopKappa", "KappaWealth", 
+		  "GoldenKappa", "KappaChief", "KappaG", "KappaHD", "KappaR", "KrappaW",  "Kapp", 
+		  "Krap", "Krapp", "Krappa", "KrappaT", "KrappaPls", "KrappaPride", "KappaW", 
+		  "KrappaRoss", "doopiaGrey", "doopBottle", "Kepapo", "Krepapo", "Krabpa", "doopiaXD", 
+		  "YesHaha", "DarkMode", "doopKeepo", "doopiaGrey"]
+
 uptime = 0
+
+
+
+def contains_kappa(message):
+	words = message.split(" ")
+	
+	for word in words:
+		if word in KAPPAS:
+			return True
+
+def send_kappa_message(username, message, kappa_message_count):
+	kappa_info = str(kappa_message_count) + "_" + username + "=" + message + "\n\r"
+
+	kappa_file = open(KAPPA_COUNT_FILE, "a")
+	kappa_file.write(kappa_info)
+	kappa_file.close()
 
 
 def send_message(socket, irc, message):

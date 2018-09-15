@@ -78,6 +78,7 @@ gameThread = threading.Thread(target = get_game , args = ())
 gameThread.daemon = True
 gameThread.start()
 
+
 while True:
 	line = str(s.recv(1024))
 	if "End of /NAMES list" in line:
@@ -87,7 +88,8 @@ while True:
 # TODO
 # Have doopbot Klappa for each month someone is subscribed
 # Points for new followers (Web hooks)
-#
+# !dd
+
 while True:
 	for rawLine in str(s.recv(1024).decode("utf8")).split('\\r\\n'):
 		message = str(rawLine.encode("utf8"))

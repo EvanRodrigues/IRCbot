@@ -2,15 +2,19 @@ import requests
 
 import time
 import datetime
+import math
 
 from Quote import Quote
 from Quote import add_quote
 from Tools import send_message
 from Tools import create_log
+from Tools import contains_kappa
+from Tools import send_kappa_message
+from User import User
 
 from ConnectionVars import CLIENT_ID
 
-
+kappa_message_count = 0
 game = ""
 startTime = None
 id = {'Client-ID': CLIENT_ID}
@@ -87,34 +91,55 @@ def getMessage(line):
 	except:
 		return ""
 
-	
 
+
+def add_klappas(count):
+	output = ""
+
+	if count > 25:
+		output = "Kappa Clap (x " + str(count) + ")"	
+	else:
+		for	i in range (0, count):
+			output += "Kappa Clap "
+
+	return output
 
 
 def message_handler(irc, s, utfLine, line, quote):
-	global game
+	global game, kappa_message_count
 
 	username = get_tag("display-name", line)
 	bits = get_tag("bits", line)
+	sub = get_tag("msg-id", line)
+	months = get_tag("msg-param-months", line)
 	message = getMessage(line)
+
+
 
 	if message != "" and username != None:
 		print(username + ": " + message)
 		log(username, message)
-		
+		return
+
+	user = User(username)
+
+	# What does a new sub message look like?
+	# What does a gifted sub message look like?	
+	if sub != None and username != "doopbot":
+		output = ""
+		Klappas = ""
+
+		if sub == "resub":
+			Klappas = add_klappas(int(months))
+			output = "Thanks for resubbing for " + months + " months " + username + "! "
+			
+		send_message(s, irc, output + Klappas)
+
 
 	if bits != None:
 		count = 0
 		output = "Thanks for the " + bits + " bits " + username + "! "
-		Klappas = ""
-
-		if int(bits) > 2500:
-			Klappas = "Kappa Clap (x " + bits[:-2] + ")"
-		else:
-			while count < int(bits):
-				Klappas += "Kappa Clap "
-				count += 100
-
+		Klappas = add_klappas(math.ceil(int(bits) / 10))
 		send_message(s, irc, output + Klappas)
 
 
@@ -148,12 +173,24 @@ def message_handler(irc, s, utfLine, line, quote):
 		send_message(s, irc, "https://pastebin.com/k9cPVTdS")
 
 
+	elif contains_kappa(message):
+		send_kappa_message(username, message, kappa_message_count)
+		kappa_message_count += 1
+
+
+	elif message == "!dd":
+		send_message(s, irc, "You have " + str(user.getDollars()) + " Doop Dollars " + username)
+
+
+
 	#TODO:
 	#Put these commands in an array to save lines of code. 
 	#Store them in a file and load them in?
 
 
 	#random commands
+	elif message == "well":
+		send_message(s, irc, ", I guess it was all obsolete, anyway. Your new suit's a Mark VI, just came up from Songnam this morning. Try and take it easy till you get used to the upgrades. Okay, let's test your targeting, first thing. Please look at the top light. Good. Now look at the bottom light. Alright. Look at the top light again. That's it. Now the bottom one.")
 	elif  message == "!subscribe":
 		send_message(s, irc, "Here's a link to subscribe if you're on mobile: https://subs.twitch.tv/doopian")
 	elif message == "!wr":

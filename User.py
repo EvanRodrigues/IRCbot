@@ -53,7 +53,8 @@ class User:
 				continue 
 
 			username = line.split(":")[0]
-			if username == self.username:
+			if username == self.username.lower():
+				print("pog")
 				dollars = line.split(":")[1]
 				return int(dollars.strip("\n"))
 

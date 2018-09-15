@@ -37,16 +37,12 @@ class AutoPoints:
 				continue
 
 
-	#
-	# 
-	#
 	def award_all(self, total):
 		for user in self.chatters:
 			print("added 1 dd to " + user)
 			update_file(POINTS_FILE, user, total)
 		
 		return
-
 
 
 def rem_extra_info(userInfo):
