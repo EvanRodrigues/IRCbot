@@ -63,10 +63,6 @@ def add_quote(message):
 	totalQuotes = count_quotes()
 	quote = getQuote(message)
 
-	print("utf8 quote start")
-	print(quote.encode("utf8"))
-	print("utf8 quote over")
-
 	file = open(QUOTE_FILE, "a", encoding="utf8")
 	file.write(str(totalQuotes+1) + "=" + quote.replace('\\', '') + "\n")
 	file.close()
