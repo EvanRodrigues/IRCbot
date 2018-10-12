@@ -80,7 +80,7 @@ gameThread.start()
 
 
 while True:
-	line = str(s.recv(1024))
+	line = str(s.recv(524288))
 	if "End of /NAMES list" in line:
 		break
 
@@ -91,7 +91,7 @@ while True:
 # !dd
 
 while True:
-	for rawLine in str(s.recv(1024).decode("utf8")).split('\\r\\n'):
+	for rawLine in str(s.recv(524288).decode("utf8")).split('\\r\\n'):
 		message = str(rawLine.encode("utf8"))
 		print("SERVER RESPONSE: " + message)
 		

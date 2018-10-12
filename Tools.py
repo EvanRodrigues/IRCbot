@@ -24,7 +24,7 @@ uptime = 0
 
 def contains_kappa(message):
 	words = message.split(" ")
-	
+
 	for word in words:
 		if word in KAPPAS:
 			return True

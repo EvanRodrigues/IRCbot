@@ -3,7 +3,7 @@ import time
 
 from Tools import update_file
 
-POINTS_FILE = './points.txt'
+POINTS_FILE = './Data/Points.txt'
 
 class AutoPoints:
 	def __init__(self):
@@ -27,14 +27,17 @@ class AutoPoints:
 		parts = line.split("\\r\\n")
 
 		for part in parts:
-			if "JOIN" in part:
-				user = part.split(":")[1].split("!")[0]
-				self.chatters.append(user)
-			elif "PART" in part:
-				user = part.split(":")[1].split("!")[0]
-				self.chatters.remove(user)
-			else:
-				continue
+			try:
+				if "JOIN" in part:
+					user = part.split(":")[1].split("!")[0]
+					self.chatters.append(user)
+				elif "PART" in part:
+					user = part.split(":")[1].split("!")[0]
+					self.chatters.remove(user)
+				else:
+					continue
+			except:
+				continue		
 
 
 	def award_all(self, total):

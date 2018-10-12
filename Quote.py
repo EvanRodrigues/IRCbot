@@ -40,13 +40,10 @@ class Quote():
 		QuoteThread.start()
 
 
+#Needs to find the quote in the messy server response from twitch :)
 def getQuote(line):
-	parts = line.split(":")
-	total_parts = len(parts)
-	quote= parts[total_parts - 1]
-
-	quote = quote.split(" ")[1].strip("\n\r")
-
+	parts = line.split(":!addquote ")
+	quote = parts[1].strip("\n\r")
 	return quote
 
 
@@ -61,12 +58,14 @@ def count_quotes():
 	return count
 
 
+#takes the quote and author from message handler and adds them to the quote file.
 def add_quote(message):
 	totalQuotes = count_quotes()
 	quote = getQuote(message)
 
-
+	print("utf8 quote start")
 	print(quote.encode("utf8"))
+	print("utf8 quote over")
 
 	file = open(QUOTE_FILE, "a", encoding="utf8")
 	file.write(str(totalQuotes+1) + "=" + quote.replace('\\', '') + "\n")

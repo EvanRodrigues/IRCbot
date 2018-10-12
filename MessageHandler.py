@@ -42,6 +42,10 @@ def get_game():
 		data = r.json()
 		r.close()
 
+		if data == None:
+			time.sleep(60)
+			continue
+
 		if len(data['data']) == 0:
 			time.sleep(60)
 			continue
@@ -84,7 +88,6 @@ def get_tag(target, line):
 
 def getMessage(line):
 	parts = line.split("#doopian :")
-
 	try:
 		message = parts[1]
 		return message
@@ -111,7 +114,10 @@ def message_handler(irc, s, utfLine, line, quote):
 	username = get_tag("display-name", line)
 	bits = get_tag("bits", line)
 	sub = get_tag("msg-id", line)
+	gift_count = get_tag("msg-param-mass-gift-count", line)
+	gift_recipient = get_tag("msg-param-recipient-display-name", line)
 	months = get_tag("msg-param-months", line)
+	mod = get_tag("mod", line)
 	message = getMessage(line)
 
 
@@ -119,12 +125,12 @@ def message_handler(irc, s, utfLine, line, quote):
 	if message != "" and username != None:
 		print(username + ": " + message)
 		log(username, message)
+	else:
 		return
 
 	user = User(username)
 
-	# What does a new sub message look like?
-	# What does a gifted sub message look like?	
+
 	if sub != None and username != "doopbot":
 		output = ""
 		Klappas = ""
@@ -132,6 +138,21 @@ def message_handler(irc, s, utfLine, line, quote):
 		if sub == "resub":
 			Klappas = add_klappas(int(months))
 			output = "Thanks for resubbing for " + months + " months " + username + "! "
+
+		elif sub == "sub":
+			Klappas = "Kappa Clap"
+			output = "Thanks for subbing " + username + "! "
+
+		elif sub == "subgift":
+			Klappas = add_klappas(int(months))
+			if months == "1":
+				output = "Thanks for gifting a sub to " + gift_recipient + " " + username + "! "
+			else:
+				output = "Thanks for gifting a sub to " + gift_recipient + " " + username + "! " + gift_recipient + " has subscribed for " + months + " months in a row! "
+
+		elif sub == "submysterygift":
+			Klappas = add_klappas(int(gift_count))
+			output = "Thanks for mass gifting " + gift_count + " subs to the channel " + username + "! "
 			
 		send_message(s, irc, output + Klappas)
 
@@ -158,17 +179,11 @@ def message_handler(irc, s, utfLine, line, quote):
 			return
 
 		quote.run(s, irc, quoteIndex, username)
-	elif message.startswith("!addquote ") and username == "Doopian":
-		message = message.split("!addquote ")[1].strip("\n")
+	elif message.startswith("!addquote ") and mod == "1":
 		send_message(s, irc, add_quote(utfLine))
 
 
-
-	elif message == "!songs":
-		send_message(s, irc, "https://doop-songs.000webhostapp.com/")
-
-
-
+	#Misc commands
 	elif message == "!commands":
 		send_message(s, irc, "https://pastebin.com/k9cPVTdS")
 
@@ -178,6 +193,7 @@ def message_handler(irc, s, utfLine, line, quote):
 		kappa_message_count += 1
 
 
+	#Doop Dollars
 	elif message == "!dd":
 		send_message(s, irc, "You have " + str(user.getDollars()) + " Doop Dollars " + username)
 
@@ -189,6 +205,8 @@ def message_handler(irc, s, utfLine, line, quote):
 
 
 	#random commands
+	elif message == "!challenge":
+		send_message(s, irc, "Doopian has failed the 30 day challenge, he will play through Ride to Hell Retribution in one sitting on stream on October 13th.")
 	elif message == "well":
 		send_message(s, irc, ", I guess it was all obsolete, anyway. Your new suit's a Mark VI, just came up from Songnam this morning. Try and take it easy till you get used to the upgrades. Okay, let's test your targeting, first thing. Please look at the top light. Good. Now look at the bottom light. Alright. Look at the top light again. That's it. Now the bottom one.")
 	elif  message == "!subscribe":
@@ -228,7 +246,7 @@ def message_handler(irc, s, utfLine, line, quote):
 	elif message == "!thumbsdown":
 		send_message(s, irc, "Krappa p Krappa p Krappa p")
 	elif message == "!schedule":
-		send_message(s, irc, "Check in doopian's panels to see the current schedule.")
+		send_message(s, irc, "Monday-Friday: 3pm start, Weekends: 10am start (EST)")
 	elif message == "!plugdj":
 		send_message(s, irc, "request songs here -> https://plug.dj/doopian-song-requests")
 	elif message == "!customs":
