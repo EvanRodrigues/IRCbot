@@ -10,6 +10,7 @@ from Tools import send_message
 from Tools import create_log
 from Tools import contains_kappa
 from Tools import send_kappa_message
+from Tools import format_time
 from User import User
 
 from ConnectionVars import CLIENT_ID
@@ -108,7 +109,7 @@ def add_klappas(count):
 	return output
 
 
-def message_handler(irc, s, utfLine, line, quote):
+def message_handler(irc, s, utfLine, line, quote, start_time):
 	global game, kappa_message_count
 
 	username = get_tag("display-name", line)
@@ -196,6 +197,12 @@ def message_handler(irc, s, utfLine, line, quote):
 	#Doop Dollars
 	elif message == "!dd":
 		send_message(s, irc, "You have " + str(user.getDollars()) + " Doop Dollars " + username)
+
+
+	#Uptime command
+	elif message == "!uptime":
+		elapsed_time = int(time.time() - start_time)
+		send_message(s, irc, "Doopian has been streaming for " + format_time(elapsed_time))
 
 
 

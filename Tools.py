@@ -17,10 +17,7 @@ KAPPAS = ["Kappa", "Keepo", "KappaRoss", "KappaPride", "KappaClaus", "doopKappa"
 		  "Krap", "Krapp", "Krappa", "KrappaT", "KrappaPls", "KrappaPride", "KappaW", 
 		  "KrappaRoss", "doopiaGrey", "doopBottle", "Kepapo", "Krepapo", "Krabpa", "doopiaXD", 
 		  "YesHaha", "DarkMode", "doopKeepo", "doopiaGrey"]
-
-uptime = 0
-
-
+		  
 
 def contains_kappa(message):
 	words = message.split(" ")
@@ -46,24 +43,8 @@ def send_message(socket, irc, message):
 		print("doopbot: " + str(message.translate(non_bmp_map)))
 
 
-
-def set_uptime():
-	global uptime
-
-	while True:
-		time.sleep(1)
-		uptime += 1
-
-
-
-def get_uptime():
-	global uptime
-	return format_time(uptime)
-
-
-
 def format_time(uptime):
-	output = "uptime: "
+	output = ""
 	hours = 0
 	minutes = 0
 

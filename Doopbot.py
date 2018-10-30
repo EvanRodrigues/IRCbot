@@ -78,6 +78,8 @@ gameThread = threading.Thread(target = get_game , args = ())
 gameThread.daemon = True
 gameThread.start()
 
+start_time = time.time()
+
 
 while True:
 	line = str(s.recv(524288))
@@ -86,9 +88,7 @@ while True:
 
 #
 # TODO
-# Have doopbot Klappa for each month someone is subscribed
 # Points for new followers (Web hooks)
-# !dd
 
 while True:
 	for rawLine in str(s.recv(524288).decode("utf8")).split('\\r\\n'):
@@ -104,4 +104,4 @@ while True:
 
 		message = message[:-5]
 		message = stripHighlight(message)
-		message_handler(irc, s, rawLine, message, quote)
+		message_handler(irc, s, rawLine, message, quote, start_time)
