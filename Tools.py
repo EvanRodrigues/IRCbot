@@ -11,6 +11,7 @@ KAPPA_FACES_FILE = "./Data/KappaFaces.txt"
 POINTS_FILE = "./Data/Points.txt"
 SONG_FILE = "B:/Clone Hero Stuff/Clone Hero/currentsong.txt"
 CURRENT_SONG_FORMATTED = "./Data/CurrentSong.txt"
+COMMANDS_FILE = "./Data/Commands.txt"
 
 KAPPAS = ["Kappa", "Keepo", "KappaRoss", "KappaPride", "KappaClaus", "doopKappa", "KappaWealth", 
 		  "GoldenKappa", "KappaChief", "KappaG", "KappaHD", "KappaR", "KrappaW",  "Kapp", 
@@ -32,6 +33,23 @@ def send_kappa_message(username, message, kappa_message_count):
 	kappa_file = open(KAPPA_COUNT_FILE, "a")
 	kappa_file.write(kappa_info)
 	kappa_file.close()
+
+
+#Goes through the commands file
+#For each line, this function grabs the command and the output
+#RETURNS: a dict of commands and outputs.
+#GOAL: create an object to store simple commands. reduces boiler plate.
+def set_commands():
+	file = open(COMMANDS_FILE, "r")
+	output = {}
+
+	for line in file:
+		split_index = line.find(":")
+		command = line[0:split_index]
+		command_output = line[split_index+1:]
+		output[command] = command_output
+
+	return output
 
 
 def send_message(socket, irc, message):

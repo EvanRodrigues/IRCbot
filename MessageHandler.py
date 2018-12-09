@@ -11,6 +11,7 @@ from Tools import create_log
 from Tools import contains_kappa
 from Tools import send_kappa_message
 from Tools import format_time
+from Tools import set_commands
 from User import User
 
 from ConnectionVars import CLIENT_ID
@@ -21,12 +22,13 @@ startTime = None
 id = {'Client-ID': CLIENT_ID}
 q = "https://api.twitch.tv/helix/streams?user_login=doopian"
 LOG_FILE = create_log()
+basic_commands = set_commands()
 
 
 
 def get_game_name(gameID, HEADERS):
 	game_query = "https://api.twitch.tv/helix/games?id=" + gameID
-	
+
 	r = requests.get(url = game_query, headers = HEADERS)
 	data = r.json()
 
@@ -101,7 +103,7 @@ def add_klappas(count):
 	output = ""
 
 	if count > 25:
-		output = "Kappa Clap (x " + str(count) + ")"	
+		output = "Kappa Clap (x " + str(count) + ")"
 	else:
 		for	i in range (0, count):
 			output += "Kappa Clap "
@@ -154,7 +156,7 @@ def message_handler(irc, s, utfLine, line, quote, start_time):
 		elif sub == "submysterygift":
 			Klappas = add_klappas(int(gift_count))
 			output = "Thanks for mass gifting " + gift_count + " subs to the channel " + username + "! "
-			
+
 		send_message(s, irc, output + Klappas)
 
 
@@ -180,102 +182,46 @@ def message_handler(irc, s, utfLine, line, quote, start_time):
 			return
 
 		quote.run(s, irc, quoteIndex, username)
-	elif message.startswith("!addquote ") and mod == "1":
-		send_message(s, irc, add_quote(utfLine))
+	
 
+	#For some reason, the broadcaster is not listed as a mod.
+	elif message.startswith("!addquote "):
+		if mod == "1" or username == "Doopian":
+			send_message(s, irc, add_quote(utfLine))
 
 	#Misc commands
 	elif message == "!commands":
 		send_message(s, irc, "https://pastebin.com/k9cPVTdS")
 
-
 	elif contains_kappa(message):
 		send_kappa_message(username, message, kappa_message_count)
 		kappa_message_count += 1
-
 
 	#Doop Dollars
 	elif message == "!dd":
 		send_message(s, irc, "You have " + str(user.getDollars()) + " Doop Dollars " + username)
 
-
-	#Uptime command
+    #Uptime command
 	elif message == "!uptime":
 		elapsed_time = int(time.time() - start_time)
 		send_message(s, irc, "Doopian has been streaming for " + format_time(elapsed_time))
 
-
-
-	#TODO:
-	#Put these commands in an array to save lines of code. 
-	#Store them in a file and load them in?
-
-
-	#random commands
-	elif message == "!challenge":
-		send_message(s, irc, "Doopian has failed the 30 day challenge, he will play through Ride to Hell Retribution in one sitting on stream on October 13th.")
-	elif message == "well":
-		send_message(s, irc, ", I guess it was all obsolete, anyway. Your new suit's a Mark VI, just came up from Songnam this morning. Try and take it easy till you get used to the upgrades. Okay, let's test your targeting, first thing. Please look at the top light. Good. Now look at the bottom light. Alright. Look at the top light again. That's it. Now the bottom one.")
-	elif  message == "!subscribe":
-		send_message(s, irc, "Here's a link to subscribe if you're on mobile: https://subs.twitch.tv/doopian")
 	elif message == "!wr":
 		send_message(s, irc, get_world_record())
-	elif message == "!protoss":
-		send_message(s, irc, "Protoss are Love, Protoss are Life, for Aiur!!")
-	elif message == "!cuck":
-		send_message(s, irc, "TheDoc213")
-	elif message == "!zerg":
-		send_message(s, irc, "PvZ is Doopian's best matchup. You will probably lose if you are zerg versus Doopian Kappa")
-	elif message == "!terran":
-		send_message(s, irc, "Terran is a delicate race, be sure to a-move frequently into Doopian's storms.")
-	elif message == "!random":
-		send_message(s, irc, "Playing random is like a box of chocolates. Only 1 of the chocolates is your favorite ~ Kappa ~")
-	elif message == "!top5":
-		send_message(s, irc, "1. Kappa 2. Krappa 3. Krabpa 4. Krepapo 5. Kapp")
+
 	elif message == "!doyourememberme":
 		send_message(s, irc, "Doopian does not remember you " + username  + " Krappa")
-	elif message == "!pranked":		
-		send_message(s, irc, "YOU HAVE BEEN COAXED INTO A SNAFU! LUL")
-	elif message == "!vapenation":
-		send_message(s, irc, "http://sketchtoy.com/67098968")
-	elif message == "!fc":
-		send_message(s, irc, "A fan club (or fc for short) is a group of like minded individuals that congregate over the same topic.")
-	elif message == "!cf":
-		send_message(s, irc, "A combo full (or cf for short) is when you get a 100% in a guitar hero song without breaking your combo.")
-	elif message == "!cheer":
-		send_message(s, irc, "*\ Kappa /* GO DOOP GO *\ Kappa /*")
-	elif message == "!rigged":
-		send_message(s, irc, "BabyRage NEVER LUCKY BabyRage")
-	elif message == "!Klappa":
-		send_message(s, irc, "Kappa Clap Kappa Clap Kappa Clap")
-	elif message == "!thumbsup":
-		send_message(s, irc, "Kappa b Kappa b Kappa b")
-	elif message == "!thumbsdown":
-		send_message(s, irc, "Krappa p Krappa p Krappa p")
-	elif message == "!schedule":
-		send_message(s, irc, "Monday-Friday: 3pm start, Weekends: 10am start (EST)")
-	elif message == "!plugdj":
-		send_message(s, irc, "request songs here -> https://plug.dj/doopian-song-requests")
-	elif message == "!customs":
-		send_message(s, irc, "Download clonehero.")
+
 	elif message == "!motivation":
 		send_message(s, irc, ":ok_hand: SeriousSloth you got this " + username)
-	elif message == "!prime":
-		send_message(s, irc, "https://i.imgur.com/fBf3v1r.png")
-	elif message == "!gentlebob":
-		send_message(s, irc, "http://i.imgur.com/AkTtU0c.jpg")
-	elif message == "!marble":
-		send_message(s, irc, "This is not marble racing. This will never be marble racing. You are in the wrong chat room. Stop using the !marble command please. Thanks!")
-	elif message == "!twitter":
-		send_message(s, irc, "Follow Doopian at http://twitter.com/doopian")
-	elif message == "!youtube":
-		send_message(s, irc, "Subscribe to Doopian's channel for Guitar Hero related videos at https://youtube.com/doopian")
-	elif message == "!instagram":
-		send_message(s, irc, "https://www.instagram.com/the_kappa_fan_club")
-	elif message == "!discord":
-		send_message(s, irc, "Here is Doopian's discord server https://discord.gg/YBpfPQD")
+
+	#Social media dump
 	elif message == "!social" and username == "Doopian":
 		send_message(s, irc, "Join Doopian's discord server https://discord.gg/YBpfPQD")
 		send_message(s, irc, "Follow Doopian at https://twitter.com/doopian")
 		send_message(s, irc, "Subscribe to Doopian's YouTube channel at https://youtube.com/doopian")
 		send_message(s, irc, "Follow Doopian on instagram https://www.instagram.com/the_kappa_fan_club")
+
+	#All basic commands, (this used to be like 30 lines)
+	elif basic_commands[message] != None:
+		send_message(s, irc, basic_commands[message])
