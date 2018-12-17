@@ -223,5 +223,8 @@ def message_handler(irc, s, utfLine, line, quote, start_time):
 		send_message(s, irc, "Follow Doopian on instagram https://www.instagram.com/the_kappa_fan_club")
 
 	#All basic commands, (this used to be like 30 lines)
-	elif basic_commands[message] != None:
-		send_message(s, irc, basic_commands[message])
+	try:
+		if basic_commands[message] != None:
+			send_message(s, irc, basic_commands[message])
+	except KeyError:
+		pass
