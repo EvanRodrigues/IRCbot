@@ -1,7 +1,6 @@
 import datetime
 import time
 import sys
-from urllib.request import Request, urlopen
 from os.path import exists
 
 
@@ -12,13 +11,28 @@ POINTS_FILE = "./Data/Points.txt"
 SONG_FILE = "B:/Clone Hero Stuff/Clone Hero/currentsong.txt"
 CURRENT_SONG_FORMATTED = "./Data/CurrentSong.txt"
 COMMANDS_FILE = "./Data/Commands.txt"
+EMOTE_FILE = "./Data/Emotes.txt"
 
-KAPPAS = ["Kappa", "Keepo", "KappaRoss", "KappaPride", "KappaClaus", "doopKappa", "KappaWealth", 
-		  "GoldenKappa", "KappaChief", "KappaG", "KappaHD", "KappaR", "KrappaW",  "Kapp", 
-		  "Krap", "Krapp", "Krappa", "KrappaT", "KrappaPls", "KrappaPride", "KappaW", 
-		  "KrappaRoss", "doopiaGrey", "doopBottle", "Kepapo", "Krepapo", "Krabpa", "doopiaXD", 
-		  "YesHaha", "DarkMode", "doopKeepo", "doopiaGrey"]
-		  
+
+# KAPPAS = load_emotes()
+
+KAPPAS = ["Kappa", "Keepo", "KappaRoss", "KappaPride", "KappaClaus", "doopKappa", "KappaWealth",
+		  "GoldenKappa", "KappaChief", "KappaG", "KappaHD", "KappaR", "KrappaW",  "Kapp",
+		  "Krap", "Krapp", "Krappa", "KrappaT", "KrappaPls", "KrappaPride", "KappaW",
+		  "KrappaRoss", "doopiaGrey", "doopBottle", "Kepapo", "Krepapo", "Krabpa", "doopiaXD",
+		  "YesHaha", "DarkMode", "doopKeepo", "doopiaGrey", "HolidayCookie"]
+
+
+#TODO: Load emotes from a file and insert them into an array
+def load_emotes():
+        output = []
+        file = open (EMOTE_FILE, "r")
+
+        for line in file:
+                output.append(line)
+
+        return output
+
 
 def contains_kappa(message):
 	words = message.split(" ")
@@ -50,6 +64,19 @@ def set_commands():
 		output[command] = command_output
 
 	return output
+
+
+#Puts settings into a dictionary
+def get_settings():
+        File = open("./Data/Settings.txt", "r")
+        output = {}
+
+        for line in File:
+                key = line.split(":")[0]
+                val = line.split(":")[1].strip("\r\n")
+                output[key] = val
+
+        return output
 
 
 def send_message(socket, irc, message):
@@ -105,7 +132,7 @@ def current_song():
 		if line != "":
 			song = line.split("\n")[0]
 			artist = line.split("\n")[1]
-			
+
 			file = open(CURRENT_SONG_FORMATTED, "w")
 			file.write(artist + " - " + song)
 			file.close()
@@ -113,16 +140,16 @@ def current_song():
 			file = open(CURRENT_SONG_FORMATTED, "w")
 			file.write("NOTHING IS BEING PLAYED RIGHT NOW XD")
 			file.close()
-		
+
 		time.sleep(1)
 
 
-	
+
 
 
 
 #
-# Checks if a file is empty 
+# Checks if a file is empty
 # Returns True if file is empty. Returns False otherwise.
 #
 def isEmpty(filename):
@@ -137,12 +164,12 @@ def isEmpty(filename):
 
 
 def create_log():
-	filepath = "B:/Streaming_Resources/Stream_Logs/"
+	filepath = "./Data/Stream_Logs/"
 	date = str(datetime.date.today()).split("-")
 	year = date[0]
 	month = get_month(date[1])
 	day = date[2]
-	
+
 	filename = filepath + month + "_" + day + "_" + year + ".txt"
 	count = 0
 	while True:
@@ -202,7 +229,7 @@ def get_rank(username, sortedUsers):
 	return "You are unranked " + username
 
 
-#Sorts the users by their points. 
+#Sorts the users by their points.
 #The user with the most points will be at the start of the array
 def sort_users():
 	users = importPoints()
@@ -216,7 +243,7 @@ def sort_users():
 def mergeSort(left, right):
 	#default to left and right incase they have length 1
 	sortedL = left
-	sortedR = right 
+	sortedR = right
 
 	if len(left) > 1:
 		midL = int(len(left) / 2)
@@ -245,10 +272,10 @@ def merge(left, right):
 			countR += 1
 		elif countR == len(right):
 			output.append(left[countL])
-			countL += 1	
+			countL += 1
 		elif left[countL]['points'] >= right[countR]['points']:
 			output.append(left[countL])
-			countL += 1	
+			countL += 1
 		elif right[countR]['points'] >= left[countL]['points']:
 			output.append(right[countR])
 			countR += 1
@@ -263,8 +290,8 @@ def merge(left, right):
 
 
 #
-# Used to update the values of Points, XP, and Treasure  
-# This function uses addition by default. 
+# Used to update the values of Points, XP, and Treasure
+# This function uses addition by default.
 # To use subtraction, input a negative value.
 #
 def update_file(filename, target, value):
@@ -272,13 +299,13 @@ def update_file(filename, target, value):
 	found = False
 	temp = "" #saves the old file information to write to a new fresh file.
 
-	for line in file:		
+	for line in file:
 		if line == "\n":
 			continue
 
 		user = line.split(":")[0]
 		oldPoints = 0.0
-		
+
 		try:
 			oldPoints = int(line.split(":")[1])
 		except ValueError:
@@ -287,15 +314,15 @@ def update_file(filename, target, value):
 		if user == target:
 			newPoints = value + oldPoints
 			newLine = user + ":" + str(newPoints) + "\n"
-	
+
 			temp = temp + newLine
 			found = True
 		else:
 			temp = temp + line
 
 	file.close()
-	
-	
+
+
 	#No user to update, so appends the info to the file
 	if found == False:
 		file = open(filename, "a")
@@ -305,7 +332,7 @@ def update_file(filename, target, value):
 	else:
 		file = open(filename, "w")
 		file.write(temp)
-	
+
 	file.close()
 
 
@@ -337,7 +364,7 @@ def remove_user(filename, target):
 
 
 #
-# TODO: 
+# TODO:
 # Replace @tier with a tuple so there doesn't need to be extra iterations of the file.
 #
 def update_treasure_file(target, tier, value):
@@ -348,8 +375,8 @@ def update_treasure_file(target, tier, value):
 	currentTier = 0
 	temp = "" #saves the old file information to write to a new fresh file.
 
-	for line in file:	
-		#User has never had a chest of the tier being added.	
+	for line in file:
+		#User has never had a chest of the tier being added.
 		if line == "\n" and tier == int(currentTier) and found == False:
 			newLine = target + ":" + str(value) + "\n" +"\n"
 			temp += newLine
@@ -372,7 +399,7 @@ def update_treasure_file(target, tier, value):
 		if user == target and tier == int(currentTier):
 			newPoints = value + oldPoints
 			newLine = user + ":" + str(newPoints) + "\n"
-	
+
 			temp += newLine
 			found = True
 		else:
@@ -443,7 +470,7 @@ def set_kappa():
 
 	for line in file:
 		output.append(line.strip("\n"))
-		
+
 	return output
 
 

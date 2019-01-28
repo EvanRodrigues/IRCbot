@@ -12,18 +12,25 @@ from Tools import contains_kappa
 from Tools import send_kappa_message
 from Tools import format_time
 from Tools import set_commands
+from Tools import get_settings
 from User import User
 
 from ConnectionVars import CLIENT_ID
+
+
+SETTINGS = get_settings()
+channel_name = SETTINGS['channel_name'].capitalize()
+bot_name = SETTINGS['bot_name']
+currency = SETTINGS['currency_name']
+
 
 kappa_message_count = 0
 game = ""
 startTime = None
 id = {'Client-ID': CLIENT_ID}
-q = "https://api.twitch.tv/helix/streams?user_login=doopian"
+q = "https://api.twitch.tv/helix/streams?user_login=" + channel_name
 LOG_FILE = create_log()
 basic_commands = set_commands()
-
 
 
 def get_game_name(gameID, HEADERS):
@@ -41,32 +48,35 @@ def get_game_name(gameID, HEADERS):
 def get_game():
 	global game
 	while True:
-		r = requests.get(url = q, headers = id)
-		data = r.json()
-		r.close()
+                r = requests.get(url = q, headers = id)
+                data = r.json()
+                r.close()
 
-		if data == None:
-			time.sleep(60)
-			continue
+                if data == None:
+                        time.sleep(60)
+                        continue
 
-		if len(data['data']) == 0:
-			time.sleep(60)
-			continue
+                if len(data['data']) == 0:
+                        time.sleep(60)
+                        continue
 
-		game = get_game_name(data['data'][0]['game_id'], id)
-		startTime = data['data'][0]['started_at']
-		time.sleep(60)
+                game = get_game_name(data['data'][0]['game_id'], id)
+                startTime = data['data'][0]['started_at']
+                time.sleep(60)
 
 
 
 def log(username, message):
-	file_input = str(datetime.datetime.now().strftime('%H:%M:%S')) + " " + username + "=" + message + "\n\r"
-	file = open(LOG_FILE, "a")
-	file.write(file_input)
-	file.close()
+        file_input = str(datetime.datetime.now().strftime('%H:%M:%S')) + " " + username + "=" + message + "\n\r"
+        file = open(LOG_FILE, "a")
+        file.write(file_input)
+        file.close()
 
 
 
+#TODO:
+#make games and messages a file
+#import the file into a dict similar to static messages down below.
 def get_world_record():
 	global game
 	if game == "Super Mario 64":
@@ -80,151 +90,148 @@ def get_world_record():
 
 
 def get_tag(target, line):
-	tokens = line.split(';')
+        tokens = line.split(';')
 
-	for token in tokens:
-		tokenName = token.split('=')[0]
+        for token in tokens:
+                tokenName = token.split('=')[0]
 
-		if tokenName == target:
-			return token.split('=')[1]
+                if tokenName == target:
+                        return token.split('=')[1]
 
 
+#Gets the message portion of the server response
 def getMessage(line):
-	parts = line.split("#doopian :")
-	try:
-		message = parts[1]
-		return message
-	except:
-		return ""
+        global channel_name
+        #IRC channel is lower case
+        channel = channel_name.lower()
+
+        parts = line.split("#" + channel + " :")
+        try:
+                message = parts[1]
+                return message
+        except:
+                return ""
 
 
 
 def add_klappas(count):
-	output = ""
+        output = ""
 
-	if count > 25:
-		output = "Kappa Clap (x " + str(count) + ")"
-	else:
-		for	i in range (0, count):
-			output += "Kappa Clap "
+        if count > 25:
+                output = "Kappa Clap (x " + str(count) + ")"
+        else:
+                for i in range (0, count):
+                        output += "Kappa Clap "
 
-	return output
+        return output
 
 
 def message_handler(irc, s, utfLine, line, quote, start_time):
-	global game, kappa_message_count
+        global game, kappa_message_count, bot_name, channel_name
 
-	username = get_tag("display-name", line)
-	bits = get_tag("bits", line)
-	sub = get_tag("msg-id", line)
-	gift_count = get_tag("msg-param-mass-gift-count", line)
-	gift_recipient = get_tag("msg-param-recipient-display-name", line)
-	months = get_tag("msg-param-months", line)
-	mod = get_tag("mod", line)
-	message = getMessage(line)
-
-
-
-	if message != "" and username != None:
-		print(username + ": " + message)
-		log(username, message)
-	else:
-		return
-
-	user = User(username)
+        username = get_tag("display-name", line)
+        bits = get_tag("bits", line)
+        sub = get_tag("msg-id", line)
+        gift_count = get_tag("msg-param-mass-gift-count", line)
+        gift_recipient = get_tag("msg-param-recipient-display-name", line)
+        months = get_tag("msg-param-months", line)
+        mod = get_tag("mod", line)
+        message = getMessage(line)
 
 
-	if sub != None and username != "doopbot":
-		output = ""
-		Klappas = ""
 
-		if sub == "resub":
-			Klappas = add_klappas(int(months))
-			output = "Thanks for resubbing for " + months + " months " + username + "! "
+        if message != "" and username != None:
+                print(username + ": " + message)
+                log(username, message)
+        else:
+                return
 
-		elif sub == "sub":
-			Klappas = "Kappa Clap"
-			output = "Thanks for subbing " + username + "! "
-
-		elif sub == "subgift":
-			Klappas = add_klappas(int(months))
-			if months == "1":
-				output = "Thanks for gifting a sub to " + gift_recipient + " " + username + "! "
-			else:
-				output = "Thanks for gifting a sub to " + gift_recipient + " " + username + "! " + gift_recipient + " has subscribed for " + months + " months in a row! "
-
-		elif sub == "submysterygift":
-			Klappas = add_klappas(int(gift_count))
-			output = "Thanks for mass gifting " + gift_count + " subs to the channel " + username + "! "
-
-		send_message(s, irc, output + Klappas)
+        user = User(username)
 
 
-	if bits != None:
-		count = 0
-		output = "Thanks for the " + bits + " bits " + username + "! "
-		Klappas = add_klappas(math.ceil(int(bits) / 10))
-		send_message(s, irc, output + Klappas)
+        if sub != None and username != bot_name:
+                output = ""
+                Klappas = ""
+
+                if sub == "resub":
+                        Klappas = add_klappas(int(months))
+                        output = "Thanks for resubbing for " + months + " months " + username + "! "
+                elif sub == "sub":
+                        Klappas = "Kappa Clap"
+                        output = "Thanks for subbing " + username + "! "
+
+                elif sub == "subgift":
+                        Klappas = add_klappas(int(months))
+                        if months == "1":
+                                output = "Thanks for gifting a sub to " + gift_recipient + " " + username + "! "
+                        else:
+                                output = "Thanks for gifting a sub to " + gift_recipient + " " + username + "! " + gift_recipient + " has subscribed for " + months + " months in a row! "
+
+                elif sub == "submysterygift":
+                        Klappas = add_klappas(int(gift_count))
+                        output = "Thanks for mass gifting " + gift_count + " subs to the channel " + username + "! "
+                        send_message(s, irc, output + Klappas)
+
+
+                if bits != None:
+                        count = 0
+                        output = "Thanks for the " + bits + " bits " + username + "! "
+                        Klappas = add_klappas(math.ceil(int(bits) / 10))
+                        send_message(s, irc, output + Klappas)
 
 
 	#quote section
-	if message == ("!quotelist"):
-		send_message(s, irc, "All of the quotes for the bot can be found here https://pastebin.com/k6ke3pfB")
-	elif message == "!quote" and quote.active == False:
-		quote.run(s, irc, None, username)
-	elif message.startswith("!quote ") and quote.active == False:
-		quoteIndex = None
+        if message == "!quote" and quote.active == False:
+                quote.run(s, irc, None, username)
+        elif message.startswith("!quote ") and quote.active == False:
+                quoteIndex = None
 
-		try:
-			quoteIndex = int(message.split(" ")[1].strip("\n"))
-		except ValueError:
-			send_message(s, irc, "Please use a positive integer when searching quotes " + username)
-			return
+                try:
+                        quoteIndex = int(message.split(" ")[1].strip("\n"))
+                except ValueError:
+                        send_message(s, irc, "Please use a positive integer when searching quotes " + username)
+                        return
 
-		quote.run(s, irc, quoteIndex, username)
-	
+                quote.run(s, irc, quoteIndex, username)
 
-	#For some reason, the broadcaster is not listed as a mod.
-	elif message.startswith("!addquote "):
-		if mod == "1" or username == "Doopian":
-			send_message(s, irc, add_quote(utfLine))
+
+        #For some reason, the broadcaster is not listed as a mod.
+        elif message.startswith("!addquote "):
+                if mod == "1" or username == channel_name:
+                        send_message(s, irc, add_quote(utfLine))
+
+
+
+        #Song Request Section
+        elif message == "!songs":
+                send_message(s, irc, channel_name +"'s songs can be found here: https://doop-songs.000webhostapp.com")
 
 	#Misc commands
-	elif message == "!commands":
-		send_message(s, irc, "https://pastebin.com/k9cPVTdS")
-
-	elif contains_kappa(message):
-		send_kappa_message(username, message, kappa_message_count)
-		kappa_message_count += 1
+        elif contains_kappa(message):
+                send_kappa_message(username, message, kappa_message_count)
+                kappa_message_count += 1
 
 	#Doop Dollars
-	elif message == "!dd":
-		send_message(s, irc, "You have " + str(user.getDollars()) + " Doop Dollars " + username)
+        elif message == "!dd":
+                send_message(s, irc, "You have " + str(user.getDollars()) + " " + currency + " " + username)
 
-    #Uptime command
-	elif message == "!uptime":
-		elapsed_time = int(time.time() - start_time)
-		send_message(s, irc, "Doopian has been streaming for " + format_time(elapsed_time))
+        #Uptime command
+        elif message == "!uptime":
+                elapsed_time = int(time.time() - start_time)
+                send_message(s, irc, channel_name + " has been streaming for " + format_time(elapsed_time))
 
-	elif message == "!wr":
-		send_message(s, irc, get_world_record())
+        elif message == "!wr":
+                send_message(s, irc, get_world_record())
 
-	elif message == "!doyourememberme":
-		send_message(s, irc, "Doopian does not remember you " + username  + " Krappa")
+        elif message == "!doyourememberme":
+                send_message(s, irc, channel_name + " does not remember you " + username  + " Krappa")
 
-	elif message == "!motivation":
-		send_message(s, irc, ":ok_hand: SeriousSloth you got this " + username)
-
-	#Social media dump
-	elif message == "!social" and username == "Doopian":
-		send_message(s, irc, "Join Doopian's discord server https://discord.gg/YBpfPQD")
-		send_message(s, irc, "Follow Doopian at https://twitter.com/doopian")
-		send_message(s, irc, "Subscribe to Doopian's YouTube channel at https://youtube.com/doopian")
-		send_message(s, irc, "Follow Doopian on instagram https://www.instagram.com/the_kappa_fan_club")
+        elif message == "!motivation":
+                send_message(s, irc, ":ok_hand: SeriousSloth you got this " + username)
 
 	#All basic commands, (this used to be like 30 lines)
-	try:
-		if basic_commands[message] != None:
-			send_message(s, irc, basic_commands[message])
-	except KeyError:
-		pass
+        try:
+                if basic_commands[message] != None:
+                        send_message(s, irc, basic_commands[message])
+        except KeyError:
+                pass
