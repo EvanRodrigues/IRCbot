@@ -100,7 +100,7 @@ while True:
 		if message.startswith("b'PING :tmi.twitch.tv"):
 			s.send(bytes("PONG :tmi.twitch.tv \r\n", "UTF-8"))
 			continue
-		elif ("JOIN " + SETTINGS["channel_name"]) in message or "PART #doopian" in message:
+		elif ("JOIN #" + SETTINGS["channel_name"]) in message or ("PART #" + SETTINGS["channel_name"]) in message:
 			ap.updateChatters(message)
 			continue
 
