@@ -29,7 +29,7 @@ game = ""
 startTime = None
 id = {'Client-ID': CLIENT_ID}
 q = "https://api.twitch.tv/helix/streams?user_login=" + channel_name
-LOG_FILE = create_log()
+LOG_FILE = create_log("./Data/Stream_Logs/")
 basic_commands = set_commands()
 
 
@@ -126,7 +126,7 @@ def add_klappas(count):
         return output
 
 
-def message_handler(irc, s, utfLine, line, quote, start_time):
+def message_handler(irc, s, utfLine, line, quote, songList, start_time):
         global game, kappa_message_count, bot_name, channel_name
 
         username = get_tag("display-name", line)
@@ -137,17 +137,13 @@ def message_handler(irc, s, utfLine, line, quote, start_time):
         months = get_tag("msg-param-months", line)
         mod = get_tag("mod", line)
         message = getMessage(line)
-
-
+        user = User(username)
 
         if message != "" and username != None:
                 print(username + ": " + message)
                 log(username, message)
         else:
                 return
-
-        user = User(username)
-
 
         if sub != None and username != bot_name:
                 output = ""
@@ -202,9 +198,75 @@ def message_handler(irc, s, utfLine, line, quote, start_time):
 
 
 
+
         #Song Request Section
+        if message == "!requests on" and username == channel_name:
+                if songList.on == True:
+                        send_message(s, irc, "Song requests are already on")
+                else:
+                        songList.on = True
+                        send_message(s, irc, "Song requests are now on")
+        elif message == "!requests off" and username == channel_name:
+                if songList.on == False:
+                        send_message(s, irc, "Song requests are already off")
+                else:
+                        songList.on = False
+                        send_message(s, irc, "Song requests are now off")
+
+        #Mod only command to remove a song from the SongList.
+        elif message.startswith("!remove "):
+                if mod == "1" or username == channel_name:
+                        index_start = message.find(" ")
+                        index = message[index_start+1:]
+                        if index.isnumeric():
+                                index_int = int(index)
+                                songList.removeSong(index_int)
+                        else:
+                                send_message(s, irc, "Please use a positive integer " + username)
+
+        #Mod only command to update a song on the SongList.
+        elif message.startswith("!update "):
+                if mod == "1" or username == channel_name:
+                        message_parts = message.split(" ")
+                        index = message_parts[1]
+                        new_title = " "
+                        new_title = new_title.join(message_parts[2:])
+
+                        if index.isnumeric():
+                                index_int = int(index)
+                                songList.updateSong(index_int, new_title)
+                        else:
+                                send_message(s, irc, "Please use a positive integer " + username)
+
+        elif message.startswith("!request "):
+                if songList.on == False:
+                        send_message(s, irc, "Song requests are off " + username)
+                        return
+
+                song_start = message.find(" ")
+                song = message[song_start+1:]
+
+                if len(song) < 55:
+                        songList.addSong(song, username)
+                else:
+                        send_message(s, irc, "That song name is too long " + username)
+
         elif message == "!songs":
                 send_message(s, irc, channel_name +"'s songs can be found here: https://doop-songs.000webhostapp.com")
+        elif message == "!currentsong":
+                songList.currentSong()
+        elif message == "!nextsong":
+                songList.nextSong()
+        elif message == "!list":
+                songList.printList()
+        elif message == "!mysong":
+                songList.mySong(username)
+        elif message == "!pop" and username == channel_name:
+                songList.pop()
+
+
+
+
 
 	#Misc commands
         elif contains_kappa(message):
@@ -228,6 +290,10 @@ def message_handler(irc, s, utfLine, line, quote, start_time):
 
         elif message == "!motivation":
                 send_message(s, irc, ":ok_hand: SeriousSloth you got this " + username)
+
+
+        elif message == "!internet":
+                send_message(s, irc, "Doopian is trying to fundraise to pay for his own internet plan because comcast is terrible.")
 
 	#All basic commands, (this used to be like 30 lines)
         try:

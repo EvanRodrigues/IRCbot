@@ -163,24 +163,24 @@ def isEmpty(filename):
 
 
 
-def create_log():
-	filepath = "./Data/Stream_Logs/"
-	date = str(datetime.date.today()).split("-")
-	year = date[0]
-	month = get_month(date[1])
-	day = date[2]
+def create_log(filepath):
+        date = str(datetime.date.today()).split("-")
+        year = date[0]
+        month = get_month(date[1])
+        day = date[2]
 
-	filename = filepath + month + "_" + day + "_" + year + ".txt"
-	count = 0
-	while True:
-		if exists(filename):
-			count += 1
-			filename = filepath + month + "_" + day + "_" + year + "(" + str(count) + ")" +".txt"
-		else:
-			file = open(filename, "a")
-			file.write("File created \n\r")
-			file.close()
-			return filename
+        filename = filepath + month + "_" + day + "_" + year + ".txt"
+        count = 0
+        while True:
+                if exists(filename):
+                        count += 1
+                        filename = filepath + month + "_" + day + "_" + year + "(" + str(count) + ")" +".txt"
+                else:
+                        file = open(filename, "a")
+                        file.write("File created")
+                        file.write("\r\n")
+                        file.close()
+                        return filename
 
 
 def get_month(month):

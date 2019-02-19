@@ -4,7 +4,7 @@ import threading
 import datetime
 
 from AutoPoints import AutoPoints
-# from SongList import SongList
+from SongList import SongList
 from Mission import Mission
 from Slots import Slots
 from Raffle import Raffle
@@ -71,7 +71,7 @@ s.send(bytes("CAP REQ :twitch.tv/commands\r\n", "UTF-8"))
 #mission = Mission()
 #slots = Slots(s, irc)
 #raffle = Raffle(s, irc, 0, False, None, 200)
-#songList = SongList(s, irc)
+songList = SongList(s, irc)
 
 quote = Quote()
 ap = AutoPoints()
@@ -106,4 +106,4 @@ while True:
 
 		message = message[:-5]
 		message = stripHighlight(message)
-		message_handler(irc, s, rawLine, message, quote, start_time)
+		message_handler(irc, s, rawLine, message, quote, songList, start_time)
