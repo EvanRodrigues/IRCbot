@@ -134,10 +134,10 @@ def message_handler(irc, s, utfLine, line, quote, songList, start_time):
         sub = get_tag("msg-id", line)
         gift_count = get_tag("msg-param-mass-gift-count", line)
         gift_recipient = get_tag("msg-param-recipient-display-name", line)
-        months = get_tag("msg-param-months", line)
+        months = get_tag("msg-param-cumulative-months", line)
         mod = get_tag("mod", line)
         message = getMessage(line)
-        user = User(username)
+
 
         if message != "" and username != None:
                 print(username + ": " + message)
@@ -146,6 +146,7 @@ def message_handler(irc, s, utfLine, line, quote, songList, start_time):
                 return
 
         if sub != None and username != bot_name:
+                user = User(username)
                 output = ""
                 Klappas = ""
 
@@ -166,14 +167,15 @@ def message_handler(irc, s, utfLine, line, quote, songList, start_time):
                 elif sub == "submysterygift":
                         Klappas = add_klappas(int(gift_count))
                         output = "Thanks for mass gifting " + gift_count + " subs to the channel " + username + "! "
-                        send_message(s, irc, output + Klappas)
+
+                send_message(s, irc, output + Klappas)
 
 
-                if bits != None:
-                        count = 0
-                        output = "Thanks for the " + bits + " bits " + username + "! "
-                        Klappas = add_klappas(math.ceil(int(bits) / 10))
-                        send_message(s, irc, output + Klappas)
+        if bits != None:
+                count = 0
+                output = "Thanks for the " + bits + " bits " + username + "! "
+                Klappas = add_klappas(math.ceil(int(bits) / 10))
+                send_message(s, irc, output + Klappas)
 
 
 	#quote section
