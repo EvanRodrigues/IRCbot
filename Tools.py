@@ -300,7 +300,7 @@ def update_file(filename, target, value):
 	temp = "" #saves the old file information to write to a new fresh file.
 
 	for line in file:
-		if line == "\n":
+		if line == "\r\n":
 			continue
 
 		user = line.split(":")[0]
@@ -313,7 +313,7 @@ def update_file(filename, target, value):
 
 		if user == target:
 			newPoints = value + oldPoints
-			newLine = user + ":" + str(newPoints) + "\n"
+			newLine = user + ":" + str(newPoints) + "\r\n"
 
 			temp = temp + newLine
 			found = True
@@ -326,7 +326,7 @@ def update_file(filename, target, value):
 	#No user to update, so appends the info to the file
 	if found == False:
 		file = open(filename, "a")
-		file.write(target + ":" + str(value) + "\n")
+		file.write(target + ":" + str(value) + "\r\n")
 
 	#Applies the changes to a fresh file
 	else:
