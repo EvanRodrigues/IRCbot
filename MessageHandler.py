@@ -145,8 +145,11 @@ def message_handler(irc, s, utfLine, line, quote, songList, start_time):
         else:
                 return
 
+
+        user = User(username)
+
+
         if sub != None and username != bot_name:
-                user = User(username)
                 output = ""
                 Klappas = ""
 
