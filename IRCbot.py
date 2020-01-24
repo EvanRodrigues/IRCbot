@@ -72,7 +72,7 @@ missionThread = threading.Thread(target=mission.initialize, args=())
 missionThread.daemon = True
 missionThread.start()
 
-slots = Slots(s, irc)
+#slots = Slots(s, irc)
 
 
 raffle = Raffle(s, irc, 2000000)
@@ -112,5 +112,5 @@ while True:
             continue
 
         message = stripHighlight(message)
-        message_handler(irc, s, rawLine, mission, raffle, message,
-                        quote, songList, start_time)
+        message_handler(irc, s, rawLine, mission, raffle,
+                        message, quote, songList, start_time)

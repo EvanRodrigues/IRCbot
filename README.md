@@ -23,6 +23,8 @@ The bot is written purely in python. I originally used mIRC Scripting Language t
 
 ## Future Plans
 
--   Detect when stream is offline to avoid giving points when there is nothing to watch.
--   Design the bot for more general use instead of being specific to me.
+-   Remove auto points and use Twitch's built in channel points.
+-   Try to simplify the bot and start fresh using more 3rd party tools and APIs.
 -   Set up a webhook for new followers.
+-   Maybe design the bot for more general use instead of being specific to me.
+

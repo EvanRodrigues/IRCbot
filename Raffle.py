@@ -30,7 +30,7 @@ class Raffle:
         self.on = True
 
         for i in range(59, 60):
-            time.sleep(15)
+            time.sleep(40)
             if i == 20:
                 send_message(self.s, self.irc,
                              "Raffle is ending in 10 minutes!")
@@ -146,7 +146,7 @@ class Raffle:
         self.pot -= amount
         update_file(POINTS_FILE, user.username, amount)
         send_message(self.s, self.irc, "You have removed " + str(amount) +
-                     " tickets from the raffle. You have " + self.bets[user.username] + " tickets left in the raffle.")
+                     " tickets from the raffle. You have " + str(self.bets[user.username]) + " tickets left in the raffle.")
 
     # Finds the winner of the raffle
     # Rewards the winner with the pot

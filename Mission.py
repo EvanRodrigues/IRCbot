@@ -39,8 +39,8 @@ class Mission:
         send_message(self.s, self.irc, "mission starting!")
         self.active = True
 
-        for i in range(0, 4):
-            time.sleep(15)
+        for i in range(0, 1):
+            time.sleep(7)
 
             if len(self.queue) > 0:
                 output = self.addQueue()
@@ -194,9 +194,9 @@ class Mission:
     def levelRoll(self):
         rand = randint(0, 99)
 
-        if self.level % 10 == 1 and rand < 50:
+        if self.level % 10 == 1 and rand < 100:
             return True
-        elif self.level % 10 == 2 and rand < 45:
+        elif self.level % 10 == 2 and rand < -1:
             return True
         elif self.level % 10 == 3 and rand < 40:
             return True
