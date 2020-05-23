@@ -1,6 +1,7 @@
 *.txt
 *.pyc
 ConnectionVars.py
+Settings.py
 Backups/
 Data/
 __pycache__/

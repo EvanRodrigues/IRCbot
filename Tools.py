@@ -15,27 +15,27 @@ COMMANDS_FILE = "./Data/Commands.txt"
 
 # KAPPAS = load_emotes()
 
-KAPPAS = ["Kappa", "Keepo", "KappaRoss", "KappaPride", "KappaClaus", "doopKappa", "KappaWealth", "GoldenKappa", "KappaChief", "KappaG", "KappaHD", "KappaR", "KrappaW",  "Kapp", "Krap", "Krapp", "Krappa",
-          "KrappaT", "KrappaPls", "KrappaPride", "KappaW", "KrappaRoss", "doopiaGrey", "doopBottle", "Kepapo", "Krepapo", "Krabpa", "doopiaXD", "YesHaha", "DarkMode", "doopKeepo", "doopiaGrey", "HolidayCookie"]
+# KAPPAS = ["Kappa", "Keepo", "KappaRoss", "KappaPride", "KappaClaus", "doopKappa", "KappaWealth", "GoldenKappa", "KappaChief", "KappaG", "KappaHD", "KappaR", "KrappaW",  "Kapp", "Krap", "Krapp", "Krappa",
+#           "KrappaT", "KrappaPls", "KrappaPride", "KappaW", "KrappaRoss", "doopiaGrey", "doopBottle", "Kepapo", "Krepapo", "Krabpa", "doopiaXD", "YesHaha", "DarkMode", "doopKeepo", "doopiaGrey", "HolidayCookie"]
 
 
-# TODO: Load emotes from a file and insert them into an array
-def load_emotes():
-    output = []
-    file = open(EMOTE_FILE, "r")
+# # TODO: Load emotes from a file and insert them into an array
+# def load_emotes():
+#     output = []
+#     file = open(EMOTE_FILE, "r")
 
-    for line in file:
-        output.append(line)
+#     for line in file:
+#         output.append(line)
 
-    return output
+#     return output
 
 
-def contains_kappa(message):
-    words = message.split(" ")
+# def contains_kappa(message):
+#     words = message.split(" ")
 
-    for word in words:
-        if word in KAPPAS:
-            return True
+#     for word in words:
+#         if word in KAPPAS:
+#             return True
 
 
 def send_kappa_message(username, message, kappa_message_count):
@@ -172,25 +172,25 @@ def isEmpty(filename):
         return False
 
 
-def create_log(filepath):
-    date = str(datetime.date.today()).split("-")
-    year = date[0]
-    month = get_month(date[1])
-    day = date[2]
+# def create_log(filepath):
+#     date = str(datetime.date.today()).split("-")
+#     year = date[0]
+#     month = get_month(date[1])
+#     day = date[2]
 
-    filename = filepath + month + "_" + day + "_" + year + ".txt"
-    count = 0
-    while True:
-        if exists(filename):
-            count += 1
-            filename = filepath + month + "_" + day + \
-                "_" + year + "(" + str(count) + ")" + ".txt"
-        else:
-            file = open(filename, "a")
-            file.write("File created")
-            file.write("\r\n")
-            file.close()
-            return filename
+#     filename = filepath + month + "_" + day + "_" + year + ".txt"
+#     count = 0
+#     while True:
+#         if exists(filename):
+#             count += 1
+#             filename = filepath + month + "_" + day + \
+#                 "_" + year + "(" + str(count) + ")" + ".txt"
+#         else:
+#             file = open(filename, "a")
+#             file.write("File created")
+#             file.write("\r\n")
+#             file.close()
+#             return filename
 
 
 def get_month(month):
