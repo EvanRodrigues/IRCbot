@@ -64,22 +64,6 @@ def set_commands():
     return output
 
 
-# Puts settings into a dictionary
-def get_settings():
-    apply_line_breaks("./Data/Points.txt")
-    File = open("./Data/Settings.txt", "r")
-    output = {}
-
-    for line in File:
-
-        key = line.split(":")[0]
-        val = line.split(":")[1].strip("\r\n")
-        output[key] = val
-
-    File.close()
-    return output
-
-
 def apply_line_breaks(file):
     File = open(file, "r")
     new_file = ""

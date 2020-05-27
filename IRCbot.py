@@ -7,28 +7,17 @@ from Mission import Mission
 from Slots import Slots
 from Raffle import Raffle
 from Quote import Quote
-
-from Tools import get_settings
+from Settings import OAUTH, bot_name, channel_name
 from MessageHandler import message_handler
-
-
-SETTINGS = get_settings()
 
 
 class ircConnection:
     def __init__(self):
         self.HOST = "irc.twitch.tv"
         self.PORT = 6667
-        self.NICK = SETTINGS["bot_name"]
-        self.CHANNEL = SETTINGS["channel_name"]
-        self.PASS = getPass()
-
-
-# Just incase I stream some coding, I don't want the password out in the open.
-def getPass():
-    File = open("./Data/ConnectionVars.txt", "r")
-    for line in File:
-        return line
+        self.NICK = bot_name
+        self.CHANNEL = channel_name
+        self.PASS = OAUTH
 
 
 # Fixes issue if a user types a ':' in chat.

@@ -1,5 +1,44 @@
 import requests
-from Settings import channel_name
+import time
+import datetime
+
+from Settings import channel_name, CLIENT_ID, CLIENT_SECRET
+from Tools import format_time
+
+start_time = ""
+
+
+def get_token():
+    url = "https://id.twitch.tv/oauth2/token?client_id=" + \
+        CLIENT_ID + "&client_secret=" + CLIENT_SECRET + "&grant_type=client_credentials"
+
+    response = requests.post(url)
+    json = response.json()
+
+    return json["access_token"]
+
+
+def get_uptime(start_time):
+    if(start_time == "offline"):
+        return channel_name + " is offline."
+    return format_time(int(time.time() - start_time))
+
+
+def get_start_time():
+    token = get_token()
+
+    url = "https://api.twitch.tv/helix/streams?user_login=" + channel_name
+    headers = {"Authorization": "Bearer " + token, "Client-ID": CLIENT_ID}
+
+    response = requests.get(url, headers=headers)
+    json = response.json()
+
+    if(len(json["data"]) == 0):
+        return "offline"
+
+    start_time = json["data"][0]["started_at"]
+
+    return start_time
 
 
 # Strips the fluff on the message when someone uses "/me" in chat.
@@ -40,11 +79,23 @@ def get_message_data(server_response):
 
 
 def message_handler(server_response):
+    global start_time
+
     if "PRIVMSG" not in server_response:
         return
 
     message_data = get_message_data(server_response)
     print(message_data)
+
+    # TODO: Test this while streaming.
+    if(message_data["message"] == "!uptime"):
+        uptime = ""
+
+        if(start_time == ""):
+            start_time = get_start_time()
+
+        print(get_uptime(start_time))
+
     return 1
 
 
