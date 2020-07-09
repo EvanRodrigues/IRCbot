@@ -8,7 +8,7 @@ from Slots import Slots
 from Raffle import Raffle
 from Quote import Quote
 from Settings import OAUTH, bot_name, channel_name
-from MessageHandler import message_handler
+from MessageHandler import MessageHandler
 
 
 class ircConnection:
@@ -42,6 +42,8 @@ s.send(bytes("CAP REQ :twitch.tv/membership\r\n", "UTF-8"))
 s.send(bytes("CAP REQ :twitch.tv/tags\r\n", "UTF-8"))
 s.send(bytes("CAP REQ :twitch.tv/commands\r\n", "UTF-8"))
 
+mh = MessageHandler(s, irc)
+
 
 # Global mission/slots variable since there can only be one mission at a time.
 # mission = Mission(s, irc)
@@ -74,4 +76,4 @@ while True:
             s.send(bytes("PONG :tmi.twitch.tv \r\n", "UTF-8"))
             continue
 
-        message_handler(server_response)
+        mh.message_handler(server_response)

@@ -4,99 +4,111 @@ import datetime
 
 from Settings import channel_name, CLIENT_ID, CLIENT_SECRET
 from Tools import format_time
+from Tools import send_message
 
 start_time = ""
 
 
-def get_token():
-    url = "https://id.twitch.tv/oauth2/token?client_id=" + \
-        CLIENT_ID + "&client_secret=" + CLIENT_SECRET + "&grant_type=client_credentials"
+class MessageHandler:
+    socket = None
+    irc = None
 
-    response = requests.post(url)
-    json = response.json()
+    def __init__(self, socket, irc):
+        self.socket = socket
+        self.irc = irc
 
-    return json["access_token"]
+    def get_token(self):
+        url = "https://id.twitch.tv/oauth2/token?client_id=" + \
+            CLIENT_ID + "&client_secret=" + CLIENT_SECRET + "&grant_type=client_credentials"
 
+        response = requests.post(url)
+        json = response.json()
 
-def get_uptime(start_time):
-    if(start_time == "offline"):
-        return channel_name + " is offline."
-    return format_time(int(time.time() - start_time))
+        return json["access_token"]
 
+    def get_uptime(self, start_time):
+        if(start_time == "offline"):
+            return channel_name + " is offline."
 
-def get_start_time():
-    token = get_token()
+        start = datetime.datetime.strptime(
+            start_time, '%Y-%m-%dT%H:%M:%SZ').timestamp()
 
-    url = "https://api.twitch.tv/helix/streams?user_login=" + channel_name
-    headers = {"Authorization": "Bearer " + token, "Client-ID": CLIENT_ID}
+        now = datetime.datetime.utcnow().timestamp()
 
-    response = requests.get(url, headers=headers)
-    json = response.json()
+        return format_time(int(now - start))
 
-    if(len(json["data"]) == 0):
-        return "offline"
+    def get_start_time(self):
+        token = self.get_token()
 
-    start_time = json["data"][0]["started_at"]
+        url = "https://api.twitch.tv/helix/streams?user_login=" + channel_name
+        headers = {"Authorization": "Bearer " + token, "Client-ID": CLIENT_ID}
 
-    return start_time
+        response = requests.get(url, headers=headers)
+        json = response.json()
 
+        if(len(json["data"]) == 0):
+            return "offline"
 
-# Strips the fluff on the message when someone uses "/me" in chat.
-def strip_highlight(message):
-    if message.startswith("\\x01ACTION"):
-        message = message[11:-4]
+        start_time = json["data"][0]["started_at"]
 
-    return message
+        return start_time
 
+    # Strips the fluff on the message when someone uses "/me" in chat.
 
-def get_tag_val(tag):
-    return tag.split("=")[1]
+    def strip_highlight(self, message):
+        if message.startswith("\\x01ACTION"):
+            message = message[11:-4]
 
+        return message
 
-# Splits the server response into a python dict
-def get_message_data(server_response):
-    message_data = {}
-    response_tags = server_response.split(";")
+    def get_tag_val(self, tag):
+        return tag.split("=")[1]
 
-    for tag in response_tags:
-        if tag.startswith("display-name"):  # user name to lowercase
-            message_data["display-name"] = get_tag_val(tag).lower()
+    # Splits the server response into a python dict
 
-        elif tag.startswith("badges"):
-            message_data["broadcaster"] = (
-                True if "broadcaster" in get_tag_val(tag) else False
-            )
+    def get_message_data(self, server_response):
+        message_data = {}
+        response_tags = server_response.split(";")
 
-        elif tag.startswith("mod"):
-            message_data["mod"] = True if get_tag_val(tag) == "1" else False
+        for tag in response_tags:
+            if tag.startswith("display-name"):  # user name to lowercase
+                message_data["display-name"] = self.get_tag_val(tag).lower()
 
-        elif tag.startswith("user-type"):  # what was typed
-            message_parts = tag.split(channel_name + " :")
-            message_data["message"] = message_parts[len(
-                message_parts) - 1][:-1]
+            elif tag.startswith("badges"):
+                message_data["broadcaster"] = (
+                    True if "broadcaster" in self.get_tag_val(tag) else False
+                )
 
-    return message_data
+            elif tag.startswith("mod"):
+                message_data["mod"] = True if self.get_tag_val(
+                    tag) == "1" else False
 
+            elif tag.startswith("user-type"):  # what was typed
+                message_parts = tag.split(channel_name + " :")
+                message_data["message"] = message_parts[len(
+                    message_parts) - 1][:-1]
 
-def message_handler(server_response):
-    global start_time
+        return message_data
 
-    if "PRIVMSG" not in server_response:
-        return
+    def message_handler(self, server_response):
+        global start_time
 
-    message_data = get_message_data(server_response)
-    print(message_data)
+        if "PRIVMSG" not in server_response:
+            return
 
-    # TODO: Test this while streaming.
-    if(message_data["message"] == "!uptime"):
-        uptime = ""
+        message_data = self.get_message_data(server_response)
+        print(message_data)
 
-        if(start_time == ""):
-            start_time = get_start_time()
+        # TODO: Test this while streaming.
+        if(message_data["message"] == "!uptime"):
+            uptime = ""
 
-        print(get_uptime(start_time))
+            if(start_time == ""):
+                start_time = self.get_start_time()
 
-    return 1
+            send_message(self.socket, self.irc, (self.get_uptime(start_time)))
+
+        return 1
 
 
 # import requests

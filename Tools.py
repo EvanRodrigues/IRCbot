@@ -38,6 +38,17 @@ COMMANDS_FILE = "./Data/Commands.txt"
 #             return True
 
 
+def send_message(socket, irc, message):
+    socket.send(bytes("PRIVMSG #" + irc.CHANNEL +
+                      " :" + message + "\r\n", "UTF-8"))
+    try:
+        print("doopbot: " + message)
+    except UnicodeEncodeError:
+        # handles emojis in the console.
+        non_bmp_map = dict.fromkeys(range(0x10000, sys.maxunicode + 1), 0xfffd)
+        print("doopbot: " + str(message.translate(non_bmp_map)))
+
+
 def send_kappa_message(username, message, kappa_message_count):
     kappa_info = str(kappa_message_count) + "_" + \
         username + "=" + message + "\n\r"
@@ -78,17 +89,6 @@ def apply_line_breaks(file):
     File = open(file, "w")
     File.write(new_file)
     File.close()
-
-
-def send_message(socket, irc, message):
-    socket.send(bytes("PRIVMSG #" + irc.CHANNEL +
-                      " :" + message + "\r\n", "UTF-8"))
-    try:
-        print("doopbot: " + message)
-    except UnicodeEncodeError:
-        # handles emojis in the console.
-        non_bmp_map = dict.fromkeys(range(0x10000, sys.maxunicode + 1), 0xfffd)
-        print("doopbot: " + str(message.translate(non_bmp_map)))
 
 
 def format_time(uptime):
