@@ -1,6 +1,5 @@
 *.txt
 *.pyc
-ConnectionVars.py
 Settings.py
 Backups/
 Data/

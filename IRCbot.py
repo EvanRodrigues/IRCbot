@@ -3,6 +3,7 @@ import time
 import threading
 import datetime
 
+from Stream import Stream
 from Mission import Mission
 from Slots import Slots
 from Raffle import Raffle
@@ -16,7 +17,7 @@ class ircConnection:
         self.HOST = "irc.twitch.tv"
         self.PORT = 6667
         self.NICK = bot_name
-        self.CHANNEL = channel_name
+        self.CHANNEL = "doopian"
         self.PASS = OAUTH
 
 
@@ -42,8 +43,13 @@ s.send(bytes("CAP REQ :twitch.tv/membership\r\n", "UTF-8"))
 s.send(bytes("CAP REQ :twitch.tv/tags\r\n", "UTF-8"))
 s.send(bytes("CAP REQ :twitch.tv/commands\r\n", "UTF-8"))
 
-mh = MessageHandler(s, irc)
 
+stream = Stream()
+stream_thread = threading.Thread(target=stream.get_info, args=(channel_name,))
+stream_thread.daemon = True
+stream_thread.start()
+
+mh = MessageHandler(s, irc, stream)
 
 # Global mission/slots variable since there can only be one mission at a time.
 # mission = Mission(s, irc)

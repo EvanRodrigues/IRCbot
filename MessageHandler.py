@@ -3,19 +3,23 @@ import time
 import datetime
 
 from Settings import channel_name, CLIENT_ID, CLIENT_SECRET
+from HaloGames import halo_games
 from Tools import format_time
 from Tools import send_message
 
 start_time = ""
+game = ""
+stream_info = {}
 
 
 class MessageHandler:
     socket = None
     irc = None
 
-    def __init__(self, socket, irc):
+    def __init__(self, socket, irc, stream):
         self.socket = socket
         self.irc = irc
+        self.stream = stream
 
     def get_token(self):
         url = "https://id.twitch.tv/oauth2/token?client_id=" + \
@@ -37,10 +41,10 @@ class MessageHandler:
 
         return format_time(int(now - start))
 
-    def get_start_time(self):
+    def get_stream_info(self):
         token = self.get_token()
 
-        url = "https://api.twitch.tv/helix/streams?user_login=" + channel_name
+        url = "https://api.twitch.tv/helix/streams?user_login=asmongold"  # + channel_name
         headers = {"Authorization": "Bearer " + token, "Client-ID": CLIENT_ID}
 
         response = requests.get(url, headers=headers)
@@ -50,8 +54,9 @@ class MessageHandler:
             return "offline"
 
         start_time = json["data"][0]["started_at"]
+        title = json["data"][0]["title"]
 
-        return start_time
+        return {"start_time": start_time, "title": title}
 
     # Strips the fluff on the message when someone uses "/me" in chat.
 
@@ -90,6 +95,46 @@ class MessageHandler:
 
         return message_data
 
+    def get_world_record(self):
+        game = self.stream.game
+        # have stream info grabbed every minute
+        # get game
+        # if mcc -> get title of stream
+        print(self.stream.game)
+
+        if game == "Halo: The Master Chief Collection":
+            print("Get title to determine sub-game")
+        else:
+            try:
+                abbreviation = halo_games[game]
+                print("Get record from haloruns")
+            except:
+                print("Get record from speedrun.com")
+
+        # haloruns_url = "https://haloruns.com/api/"
+        # url = "https://www.speedrun.com/api/v1/leaderboards/o1y9wo6q/category/7dgrrxk4?top=1"
+        # runner_url = "https://www.speedrun.com/api/v1/users/"
+
+        # response = requests.get(url)
+        # json = response.json()
+        # run_url = json["data"]["runs"][0]["run"]["videos"]["links"][0]["uri"]
+        # run_time = json["data"]["runs"][0]["run"]["times"]["realtime"]
+        # runner_id = json["data"]["runs"][0]["run"]["players"][0]["id"]
+
+        # runner_response = requests.get(runner_url + runner_id)
+        # json = runner_response.json()
+        # runner = json["data"]["names"]["international"]
+        # send_message(self.socket, self.irc, "SM64 70 Star WR by " + runner +
+        #              " in " + run_time + " " + run_url)
+
+        # TODO: Get the current game that I'm streaming
+        # send a query to speedrun.com
+        # could hardcode id of game and category also....
+        # Flow: Get name from twitch -> get abbreviation from speedrun.com and category
+        # url = "https://www.speedrun.com/api/v1/leaderboards/o1y9wo6q/category/7dgrrxk4?top=1"  # 70 star
+        # need a haloruns url as well for halo games.
+        # for random games ill go with Any% and do the flow listed above, but for games i regularly speedrun i will hardcode the speedrun.com api url and the haloruns url
+
     def message_handler(self, server_response):
         global start_time
 
@@ -104,11 +149,14 @@ class MessageHandler:
             uptime = ""
 
             if(start_time == ""):
-                start_time = self.get_start_time()
+                stream_info = self.get_stream_info()
 
-            send_message(self.socket, self.irc, (self.get_uptime(start_time)))
+            send_message(self.socket, self.irc,
+                         (self.get_uptime(stream_info["start_time"])))
 
-        return 1
+        elif(message_data["message"] == "!wr"):
+            self. get_world_record()
+            return 1
 
 
 # import requests
