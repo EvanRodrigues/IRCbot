@@ -51,27 +51,6 @@ stream_thread.start()
 
 mh = MessageHandler(s, irc, stream)
 
-# Global mission/slots variable since there can only be one mission at a time.
-# mission = Mission(s, irc)
-# missionThread = threading.Thread(target=mission.initialize, args=())
-# missionThread.daemon = True
-# missionThread.start()
-
-#slots = Slots(s, irc)
-
-
-# raffle = Raffle(s, irc, 2000000)
-# songList = SongList(s, irc)
-# quote = Quote()
-
-# gameThread = threading.Thread(target=get_game, args=())
-# gameThread.daemon = True
-# gameThread.start()
-
-# uptime
-# start_time = time.time()
-
-
 while True:
     for rawLine in str(s.recv(524288).decode("utf8")).split("\r\n"):
         server_response = str(rawLine.encode("utf8"))
