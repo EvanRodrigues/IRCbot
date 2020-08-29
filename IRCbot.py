@@ -72,8 +72,6 @@ mh = MessageHandler(s, irc, stream)
 # start_time = time.time()
 
 
-# TODO
-# Points for new followers (Web hooks)
 while True:
     for rawLine in str(s.recv(524288).decode("utf8")).split("\r\n"):
         server_response = str(rawLine.encode("utf8"))

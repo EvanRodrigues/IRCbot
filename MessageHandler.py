@@ -1,15 +1,99 @@
 import requests
 import time
 import datetime
-
+import functools
+import isodate
+import random
 from Settings import channel_name, CLIENT_ID, CLIENT_SECRET
-from HaloGames import halo_games
+from HaloGames import halo_games, halo_tags
+from RandomInfo import videos, runners
 from Tools import format_time
 from Tools import send_message
+
 
 start_time = ""
 game = ""
 stream_info = {}
+
+
+# Gets the world record information for the abbreviated halo game
+# NOTE: World records are tracked on haloruns.com not speedrun.com
+def get_halo_run(abbreviation):
+    halo_runs_url = "https://haloruns.com/api/records/" + \
+        abbreviation + "/fullgame/solo/easy"
+
+    response = requests.get(halo_runs_url)
+    json = response.json()
+
+    time = json["time"]
+    game = json["game_name"]
+    runner = json["runners"][0]
+    video = json["vid"]
+
+    return game + " Easy Difficulty in " + time + " by " + runner + " " + video
+
+
+# Generates a random time for the random world record.
+def get_random_time():
+    hours = "0"
+    minutes = "00"
+    seconds = "00"
+
+    while hours == "0" and minutes == "00" and seconds == "00":
+        hours = str(random.randrange(3))
+        minutes = str(random.randrange(60)).zfill(2)
+        seconds = str(random.randrange(60)).zfill(2)
+
+    return hours + ":" + minutes + ":" + seconds
+
+
+# Generates a random world record for the current game the channel is playing.
+def get_random_world_record(game, category):
+    video = random.choice(videos)
+    runner = random.choice(runners)
+    run_time = remove_leading_zeroes(get_random_time())
+
+    return game + " " + category + " World Record in " + run_time + " by " + runner + " " + video
+
+
+# Removes the leading 0s for times that don't contain hours or minutes
+# Example 0:12:13 -> 12:13
+def remove_leading_zeroes(time):
+    durations = time.split(":")
+
+    for duration in durations:
+        if duration == "0" or duration == "00":
+            durations.pop(0)
+        else:
+            break
+
+    return ":".join(durations)
+
+
+# Removes the trailing zeroes for runs with milliseconds
+# Example 4:59.656000 -> 4:59.656
+def remove_trailing_zeroes(time):
+    if "." not in time:
+        return time
+
+    time_split = time.split(".")
+    milliseconds = time_split[1]
+
+    for digit in reversed(milliseconds):
+        if digit == "0":
+            milliseconds = milliseconds[:-1]
+        else:
+            break
+
+    time_split[1] = milliseconds
+
+    return ".".join(time_split)
+
+
+# Formats the run time based on total seconds
+# Removes trailing zeroes and leading zeroes from time then converts the timedelta to a string
+def format_run_time(seconds):
+    return remove_trailing_zeroes(remove_leading_zeroes(str(datetime.timedelta(seconds=seconds))))
 
 
 class MessageHandler:
@@ -59,7 +143,6 @@ class MessageHandler:
         return {"start_time": start_time, "title": title}
 
     # Strips the fluff on the message when someone uses "/me" in chat.
-
     def strip_highlight(self, message):
         if message.startswith("\\x01ACTION"):
             message = message[11:-4]
@@ -70,7 +153,6 @@ class MessageHandler:
         return tag.split("=")[1]
 
     # Splits the server response into a python dict
-
     def get_message_data(self, server_response):
         message_data = {}
         response_tags = server_response.split(";")
@@ -97,43 +179,69 @@ class MessageHandler:
 
     def get_world_record(self):
         game = self.stream.game
-        # have stream info grabbed every minute
-        # get game
-        # if mcc -> get title of stream
-        print(self.stream.game)
 
         if game == "Halo: The Master Chief Collection":
-            print("Get title to determine sub-game")
+            title = self.stream.title
+            game_tag = title.split("]")[0]
+            game = game_tag[1:]
+            abbreviation = halo_tags[game]
+            send_message(self.socket, self.irc, get_halo_run(abbreviation))
         else:
             try:
                 abbreviation = halo_games[game]
-                print("Get record from haloruns")
+                get_halo_run(abbreviation)
+                send_message(self.socket, self.irc, get_halo_run(abbreviation))
             except:
-                print("Get record from speedrun.com")
+                games_url = "https://www.speedrun.com/api/v1/games?name=" + game
 
-        # haloruns_url = "https://haloruns.com/api/"
-        # url = "https://www.speedrun.com/api/v1/leaderboards/o1y9wo6q/category/7dgrrxk4?top=1"
-        # runner_url = "https://www.speedrun.com/api/v1/users/"
+                response = requests.get(games_url)
+                json = response.json()
 
-        # response = requests.get(url)
-        # json = response.json()
-        # run_url = json["data"]["runs"][0]["run"]["videos"]["links"][0]["uri"]
-        # run_time = json["data"]["runs"][0]["run"]["times"]["realtime"]
-        # runner_id = json["data"]["runs"][0]["run"]["players"][0]["id"]
+                target_game = list(filter(
+                    lambda g: g["names"]["international"] == game, json["data"]))
+                game_id = target_game[0]["id"]
 
-        # runner_response = requests.get(runner_url + runner_id)
-        # json = runner_response.json()
-        # runner = json["data"]["names"]["international"]
-        # send_message(self.socket, self.irc, "SM64 70 Star WR by " + runner +
-        #              " in " + run_time + " " + run_url)
+                categories_url = "https://www.speedrun.com/api/v1/games/" + game_id + "/categories"
+                category_response = requests.get(categories_url)
+                category_json = category_response.json()
 
-        # TODO: Get the current game that I'm streaming
-        # send a query to speedrun.com
-        # could hardcode id of game and category also....
-        # Flow: Get name from twitch -> get abbreviation from speedrun.com and category
-        # url = "https://www.speedrun.com/api/v1/leaderboards/o1y9wo6q/category/7dgrrxk4?top=1"  # 70 star
-        # need a haloruns url as well for halo games.
-        # for random games ill go with Any% and do the flow listed above, but for games i regularly speedrun i will hardcode the speedrun.com api url and the haloruns url
+                title = self.stream.title
+                category_tag = ""
+
+                if "]" in title:
+                    category_tag = title.split("]")[0][1:]
+                else:
+                    category_tag = "Any%"
+
+                target_category = list(
+                    filter(lambda category: category["name"].lower() == category_tag.lower(), category_json["data"]))
+                category_id = ""
+
+                if len(target_category) != 0:  # found category
+                    category_id = target_category[0]["id"]
+                else:  # did not find category
+                    send_message(self.socket, self.irc,
+                                 get_random_world_record(game, category_tag))
+                    return
+
+                run_url = "https://www.speedrun.com/api/v1/leaderboards/" + \
+                    game_id + "/category/" + category_id + "?top=1"
+                run_response = requests.get(run_url)
+                run_json = run_response.json()
+
+                run_video = run_json["data"]["runs"][0]["run"]["videos"]["links"][0]["uri"]
+                run_time = run_json["data"]["runs"][0]["run"]["times"]["primary_t"]
+                runner_id = run_json["data"]["runs"][0]["run"]["players"][0]["id"]
+
+                formatted_time = format_run_time(run_time)
+
+                runner_url = "https://www.speedrun.com/api/v1/users/"
+
+                runner_response = requests.get(runner_url + runner_id)
+                runner_json = runner_response.json()
+                runner = runner_json["data"]["names"]["international"]
+                send_message(self.socket, self.irc, game + " " + category_tag + " World Record in " + formatted_time +
+                             " by " + runner + " " + run_video)
 
     def message_handler(self, server_response):
         global start_time
@@ -157,6 +265,10 @@ class MessageHandler:
         elif(message_data["message"] == "!wr"):
             self. get_world_record()
             return 1
+
+        elif(message_data["message"] == "!emotes"):
+            send_message(self.socket, self.irc,
+                         "https://akakrypt.me/projects/emotes?channel=doopian")
 
 
 # import requests

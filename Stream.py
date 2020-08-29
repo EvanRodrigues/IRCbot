@@ -6,6 +6,7 @@ from Settings import channel_name, CLIENT_ID, CLIENT_SECRET
 
 
 def get_game(token, id):
+    name = ""
     url = "https://api.twitch.tv/helix/games?id=" + id
     headers = {"Authorization": "Bearer " +
                token, "Client-ID": CLIENT_ID}
@@ -13,7 +14,12 @@ def get_game(token, id):
     response = requests.get(url, headers=headers)
     json = response.json()
 
-    return json["data"][0]["name"]
+    try:
+        name = json["data"][0]["name"]
+    except:
+        name = ""
+
+    return name
 
 
 class Stream:
