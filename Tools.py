@@ -49,10 +49,6 @@ def send_message(socket, irc, message):
         print("doopbot: " + str(message.translate(non_bmp_map)))
 
 
-def convert_speedrun_time(time):
-    x = 1
-
-
 def send_kappa_message(username, message, kappa_message_count):
     kappa_info = str(kappa_message_count) + "_" + \
         username + "=" + message + "\n\r"

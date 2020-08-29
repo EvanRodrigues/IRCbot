@@ -17,7 +17,7 @@ class ircConnection:
         self.HOST = "irc.twitch.tv"
         self.PORT = 6667
         self.NICK = bot_name
-        self.CHANNEL = "doopian"
+        self.CHANNEL = channel_name
         self.PASS = OAUTH
 
 

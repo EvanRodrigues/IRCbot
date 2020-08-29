@@ -128,7 +128,7 @@ class MessageHandler:
     def get_stream_info(self):
         token = self.get_token()
 
-        url = "https://api.twitch.tv/helix/streams?user_login=asmongold"  # + channel_name
+        url = "https://api.twitch.tv/helix/streams?user_login=" + channel_name
         headers = {"Authorization": "Bearer " + token, "Client-ID": CLIENT_ID}
 
         response = requests.get(url, headers=headers)
@@ -264,7 +264,6 @@ class MessageHandler:
 
         elif(message_data["message"] == "!wr"):
             self. get_world_record()
-            return 1
 
         elif(message_data["message"] == "!emotes"):
             send_message(self.socket, self.irc,
