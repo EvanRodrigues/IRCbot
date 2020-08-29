@@ -18,9 +18,9 @@ stream_info = {}
 
 # Gets the world record information for the abbreviated halo game
 # NOTE: World records are tracked on haloruns.com not speedrun.com
-def get_halo_run(abbreviation):
+def get_halo_run(abbreviation, category):
     halo_runs_url = "https://haloruns.com/api/records/" + \
-        abbreviation + "/fullgame/solo/easy"
+        abbreviation + "/fullgame/solo/" + category
 
     response = requests.get(halo_runs_url)
     json = response.json()
@@ -30,7 +30,7 @@ def get_halo_run(abbreviation):
     runner = json["runners"][0]
     video = json["vid"]
 
-    return game + " Easy Difficulty in " + time + " by " + runner + " " + video
+    return game + " " + category + " difficulty world record in " + time + " by " + runner + " " + video
 
 
 # Generates a random time for the random world record.
@@ -53,7 +53,7 @@ def get_random_world_record(game, category):
     runner = random.choice(runners)
     run_time = remove_leading_zeroes(get_random_time())
 
-    return game + " " + category + " World Record in " + run_time + " by " + runner + " " + video
+    return game + " " + category + " world record in " + run_time + " by " + runner + " " + video
 
 
 # Removes the leading 0s for times that don't contain hours or minutes
@@ -197,7 +197,6 @@ class MessageHandler:
 
     def get_world_record(self, game_title, category):
         game = game_title
-        category = category
 
         print(game)
         print(category)
@@ -213,12 +212,14 @@ class MessageHandler:
             game_tag = title.split("]")[0]
             game = game_tag[1:]
             abbreviation = halo_tags[game]
-            send_message(self.socket, self.irc, get_halo_run(abbreviation))
+            send_message(self.socket, self.irc,
+                         get_halo_run(abbreviation, category))
         else:
             try:
                 abbreviation = halo_games[game]
-                get_halo_run(abbreviation)
-                send_message(self.socket, self.irc, get_halo_run(abbreviation))
+                get_halo_run(abbreviation, category)
+                send_message(self.socket, self.irc,
+                             get_halo_run(abbreviation, category))
             except:
                 games_url = "https://www.speedrun.com/api/v1/games?name=" + game
 
@@ -226,7 +227,7 @@ class MessageHandler:
                 json = response.json()
 
                 target_game = list(filter(
-                    lambda g: g["names"]["international"] == game, json["data"]))
+                    lambda g: g["names"]["international"].lower() == game.lower(), json["data"]))
                 game_id = target_game[0]["id"]
 
                 categories_url = "https://www.speedrun.com/api/v1/games/" + game_id + "/categories"
@@ -268,7 +269,7 @@ class MessageHandler:
                 runner_response = requests.get(runner_url + runner_id)
                 runner_json = runner_response.json()
                 runner = runner_json["data"]["names"]["international"]
-                send_message(self.socket, self.irc, game + " " + category + " World Record in " + formatted_time +
+                send_message(self.socket, self.irc, game + " " + category + " world record in " + formatted_time +
                              " by " + runner + " " + run_video)
 
     def message_handler(self, server_response):
