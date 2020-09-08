@@ -96,6 +96,10 @@ def format_run_time(seconds):
     return remove_trailing_zeroes(remove_leading_zeroes(str(datetime.timedelta(seconds=seconds))))
 
 
+def format_quote_output(quote):
+    return "\"" + quote.quote_value + "\" - " + quote.quoted_user
+
+
 class MessageHandler:
     socket = None
     irc = None
@@ -282,8 +286,6 @@ class MessageHandler:
         print(message_data)
 
         if(message_data["message"] == "!uptime"):
-            uptime = ""
-
             if(start_time == ""):
                 stream_info = self.get_stream_info()
 
@@ -303,3 +305,17 @@ class MessageHandler:
         elif(message_data["message"] == "!emotes"):
             send_message(self.socket, self.irc,
                          "https://akakrypt.me/projects/emotes?channel=doopian")
+
+        elif(message_data["message"] == "!quote"):
+            formatted_quote = format_quote_output(self.stream.getRandomQuote())
+            send_message(self.socket, self.irc, formatted_quote)
+
+        elif(message_data["message"].startswith("!quote ")):
+            key = message_data["message"][7:]
+            quote = self.stream.getQuote(key)
+
+            if type(quote) == str:
+                send_message(self.socket, self.irc, quote)
+            else:
+                formatted_quote = format_quote_output(quote)
+                send_message(self.socket, self.irc, formatted_quote)
