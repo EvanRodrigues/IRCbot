@@ -2,7 +2,7 @@ import threading
 import requests
 import time
 import random
-from Quote import Quote, get_quotes
+from Quote import Quote, add_to_quote_file, get_quotes
 from Settings import channel_name, CLIENT_ID, CLIENT_SECRET
 
 
@@ -42,14 +42,34 @@ class Stream:
                 return "Invalid quote number!"
 
             return self.quotes[key_int]
-
         except:
-            return "Invalid quote number"
+            filtered_quotes = list(filter(
+                lambda q: q.user.lower() == key.lower(), self.quotes))
+
+            if len(filtered_quotes) == 0:
+                return "No quotes from that user Krappa"
+
+            return self.getRandomQuote(filtered_quotes)
 
         return self.quotes[key]
 
-    def getRandomQuote(self):
-        index = random.randint(0, len(self.quotes) - 1)
+    def addQuote(self, quote):
+        value = quote.split(" - ")[0]
+        user = quote.split(" - ")[1]
+        quote_id = len(self.quotes) + 1
+
+        add_to_file = str(quote_id) + "=\"" + value + "\"=" + user
+
+        self.quotes.append(Quote(value, user))
+        add_to_quote_file(add_to_file)
+
+        # add new quote to file
+
+    def getRandomQuote(self, quotes):
+        if quotes == None:
+            quotes = self.quotes
+
+        index = random.randint(0, len(quotes) - 1)
         quote = self.quotes[index]
         return quote
 

@@ -4,18 +4,22 @@ import random
 QUOTE_FILE = "./Data/Quotes.txt"
 
 
+def add_to_quote_file(quote):
+    file = open(QUOTE_FILE, 'a')
+    file.write(quote + "\r\n")
+    file.close()
+
+
 def get_quotes(quotes):
     quote_file = open(QUOTE_FILE, 'r')
 
     for quote in quote_file:
         quote_parts = quote.split("=\"")
 
-        quote_id = quote_parts[0]
+        value = quote_parts[1].split("\"=")[0][:-1]
+        user = quote_parts[1].split("\"=")[1][:-1]
 
-        quote_value = quote_parts[1].split("\"=")[0][:-1]
-        quoted_user = quote_parts[1].split("\"=")[1][:-1]
-
-        quote = Quote(quote_id, quote_value, quoted_user)
+        quote = Quote(value, user)
 
         quotes.append(quote)
 
@@ -23,7 +27,6 @@ def get_quotes(quotes):
 
 
 class Quote:
-    def __init__(self, id, value, user):
-        self.id = id
-        self.quote_value = value
-        self.quoted_user = user
+    def __init__(self, value, user):
+        self.value = value
+        self.user = user

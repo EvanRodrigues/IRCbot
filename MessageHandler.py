@@ -16,6 +16,10 @@ game = ""
 stream_info = {}
 
 
+def mod_or_broadcaster(message):
+    return message["broadcaster"] == True or message["mod"] == True
+
+
 # Gets the world record information for the abbreviated halo game
 # NOTE: World records are tracked on haloruns.com not speedrun.com
 def get_halo_run(abbreviation, category):
@@ -97,7 +101,7 @@ def format_run_time(seconds):
 
 
 def format_quote_output(quote):
-    return "\"" + quote.quote_value + "\" - " + quote.quoted_user
+    return "\" " + quote.value + " \" - " + quote.user
 
 
 class MessageHandler:
@@ -307,7 +311,8 @@ class MessageHandler:
                          "https://akakrypt.me/projects/emotes?channel=doopian")
 
         elif(message_data["message"] == "!quote"):
-            formatted_quote = format_quote_output(self.stream.getRandomQuote())
+            formatted_quote = format_quote_output(
+                self.stream.getRandomQuote(None))
             send_message(self.socket, self.irc, formatted_quote)
 
         elif(message_data["message"].startswith("!quote ")):
@@ -319,3 +324,7 @@ class MessageHandler:
             else:
                 formatted_quote = format_quote_output(quote)
                 send_message(self.socket, self.irc, formatted_quote)
+
+        elif(message_data["message"].startswith("!addquote ") and mod_or_broadcaster(message_data)):
+            quote = message_data["message"][10:]
+            self.stream.addQuote(quote)
